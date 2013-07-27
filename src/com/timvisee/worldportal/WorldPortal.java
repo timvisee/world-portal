@@ -1,5 +1,7 @@
 package com.timvisee.worldportal;
 
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -16,6 +18,7 @@ import com.timvisee.worldportal.manager.WPEconomyManager;
 import com.timvisee.worldportal.manager.WPPermissionsManager;
 import com.timvisee.worldportal.point.WPPointsManager;
 import com.timvisee.worldportal.portal.WPPortalsManager;
+import com.timvisee.worldportal.world.WPWorldDataManager;
 import com.timvisee.worldportal.world.WPWorldManager;
 
 public class WorldPortal extends JavaPlugin {
@@ -35,6 +38,7 @@ public class WorldPortal extends JavaPlugin {
 	private WPPermissionsManager permsMan;
 	private WPEconomyManager econMan;
 	private WPWorldManager worldMan;
+	private WPWorldDataManager worldDataMan;
 	private WPPortalsManager portalMan;
 	private WPPointsManager pointMan;
 	
@@ -77,6 +81,7 @@ public class WorldPortal extends JavaPlugin {
 		setUpPermissionsManager();
 		setUpEconomyManager();
 		setUpWorldManager();
+		setUpWorldDataManager();
 		setUpPortalsManager();
 		setUpPointsManager();
 		
@@ -197,37 +202,59 @@ public class WorldPortal extends JavaPlugin {
 	}
 	
 	/**
-	 * Set up the world manager and load all world data
+	 * Set up the world manager
 	 */
 	public void setUpWorldManager() {
+		// Construct and set up the world manager class
+		this.worldMan = new WPWorldManager();
+		
+		// Register all current loaded worlds in the world manager
+		for(World w : Bukkit.getWorlds())
+			this.worldMan.registerWorld(w);
+		
+		// TODO: Create world data for these worlds if it doesn't exist
+	}
+	
+	/**
+	 * Get the world manager instance
+	 * @return World manager instance
+	 */
+	public WPWorldManager getWorldManager() {
+		return this.worldMan;
+	}
+	
+	/**
+	 * Set up the world data manager and load all world data
+	 */
+	public void setUpWorldDataManager() {
 		// Show a status message
-		getWPLogger().info("Loading worlds...");
+		getWPLogger().info("Loading world data...");
 		
 		// Save the time
 		long t = System.currentTimeMillis();
 		
-		// Construct the portal manager
-		this.worldMan = new WPWorldManager();
+		// Construct the world data manager
+		this.worldDataMan = new WPWorldDataManager();
 		
-		// Load the portals
-		boolean result = this.worldMan.load();
+		// Load the worlds data
+		boolean result = this.worldDataMan.load();
 		
 		// Calculate the duration
 		long duration = System.currentTimeMillis() - t;
 		
 		// Show a status message
 		if(result)
-			getWPLogger().info("Loaded data " + String.valueOf(this.worldMan.getWorldsCount()) + " worlds, took " + String.valueOf(duration) + " ms!");
+			getWPLogger().info("Loaded data for " + String.valueOf(this.worldMan.getWorldsCount()) + " worlds, took " + String.valueOf(duration) + " ms!");
 		else
-			getWPLogger().error("An error occurred while loading the worlds!");
+			getWPLogger().error("An error occurred while loading the worlds data!");
 	}
 	
 	/**
-	 * Get the world manager instance
- 	 * @return World manager instance
+	 * Get the world data manager instance
+ 	 * @return World data manager instance
 	 */
-	public WPWorldManager getWorldManager() {
-		return this.worldMan;
+	public WPWorldDataManager getWorldDataManager() {
+		return this.worldDataMan;
 	}
 	
 	/**

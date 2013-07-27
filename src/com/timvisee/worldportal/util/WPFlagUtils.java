@@ -1,6 +1,6 @@
 package com.timvisee.worldportal.util;
 
-public class FlagUtils {
+public class WPFlagUtils {
 	
 	/**
 	 * Check whether a flag is set

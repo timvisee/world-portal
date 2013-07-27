@@ -1,22 +1,21 @@
 package com.timvisee.worldportal.world;
 
-import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 
 import com.timvisee.worldportal.WorldPortal;
+import com.timvisee.worldportal.util.WPWorldUtils;
 
 public class WPWorld {
 	
 	private String worldName;
-	private String dispName;
 	
 	/**
 	 * Constructor
 	 * @param worldName World name
-	 * @param dispName World display name
 	 */
-	public WPWorld(String worldName, String dispName) {
+	public WPWorld(String worldName) {
 		this.worldName = worldName;
-		this.dispName = dispName;
 	}
 	
 	/**
@@ -28,68 +27,32 @@ public class WPWorld {
 	}
 	
 	/**
-	 * Get the display name of the world
-	 * @return World display name
+	 * Try to get the bukkit world instance for this world
+	 * @return Bukkit world instances, or null if this world isn't loaded
 	 */
-	public String getDisplayName() {
-		return this.dispName;
+	public World getBukkitWorld() {
+		// Check each loaded bukkit world and check if the name of the world equals to this name
+		for(World w : Bukkit.getWorlds())
+			if(w.getName().equals(this.worldName))
+				return w;
+		
+		// Failed retrieving bukkit world, return null
+		return null;
 	}
 	
 	/**
-	 * Set the display name of the world
-	 * @param dispName World display name
-	 */
-	public void setDisplayName(String dispName) {
-		this.dispName = dispName;
-	}
-	
-	/**
-	 * Check whether this world is loaded
+	 * Check whether this world is loaded or not
 	 * @return True if this world is loaded
 	 */
 	public boolean isLoaded() {
-		return WorldPortal.instance.getWorldManager().isWorldLoaded(this.worldName);
+		return WPWorldUtils.isWorldLoaded(this.worldName);
 	}
 	
 	/**
-	 * Load a world from a configuration section
-	 * @param c The configuration section to load the portal from
-	 * @return The loaded world, null if failed
+	 * Get the world data for this world
+	 * @return World data for this world, null if no world data is loaded for this world
 	 */
-	public static WPWorld load(ConfigurationSection c) {
-		// Make sure the configuration section isn't null
-		if(c == null)
-			return null;
-		
-		// TODO: Make sure the configuration section contains the required nodes
-		
-		// Make sure the required fields are available
-		if(!c.isString("worldName"))
-			return null;
-		
-		// Load the fields from the configuration section
-		String worldName = c.getString("worldName");
-		String dispName = c.getString("dispName", worldName);
-		
-		// Construct and return the world
-		return new WPWorld(worldName, dispName);
-	}
-
-	/**
-	 * Save the world to a configuration section
-	 * @param c Configuration Section to save the world in
-	 * @return False if failed
-	 */
-	public boolean save(ConfigurationSection c) {
-		// Make sure the configuration section isn't null
-		if(c == null)
-			return false;
-		
-		// Store the world in the configuration section
-		c.set("worldName", this.worldName);
-		c.set("dispName", this.dispName);
-		
-		// World saved, return true
-		return true;
+	public WPWorldData getWorldData() {
+		return WorldPortal.instance.getWorldDataManager().getWorldData(this.worldName);
 	}
 }
