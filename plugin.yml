@@ -1,15 +1,15 @@
-name: SafeCreeper
-description: 'Get full control of creatures, players and almost everything!'
-main: com.timvisee.safecreeper.SafeCreeper
-version: 1.5.2
+name: WorldPortal
+description: 'Multi-World teleportation plugin'
+main: com.timvisee.worldportal.WorldPortal
+version: 0.3
 load: startup
-author: timvisee
-website: http://timvisee.com/
-softdepend: [Vault, TVNLib, WorldGuard, Corruption, MobArena, PVPArena, Factions] #hack to fix trove errors
+author: 'timvisee'
+website: 'http://timvisee.com/'
+softdepend: [PermissionsEx, bPermissions, zPermissions, EssentialsGroupManager, Permissions, SimpleEconomy, BOSEconomy, iConomy, Vault] #hack to fix trove errors
 commands:
-  safecreeper:
-    description: Safe Creeper command
-    usage: /safecreeper <arguments>
-  sc:
-    description: Safe Creeper command
-    usage: /sc <arguments>
+  worldportal:
+    description: World Portal command
+    usage: /worldportal <arguments>
+  wp:
+    description: World Portal command
+    usage: /wp <arguments>

@@ -7,10 +7,16 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
-import com.timvisee.worldportal.handler.WPCommandHandler;
+import com.timvisee.worldportal.command.WPCommandHandler;
 import com.timvisee.worldportal.handler.WPMetricsHandler;
+import com.timvisee.worldportal.listener.WPBlockListener;
+import com.timvisee.worldportal.listener.WPPlayerListener;
+import com.timvisee.worldportal.listener.WPWorldListener;
 import com.timvisee.worldportal.manager.WPEconomyManager;
 import com.timvisee.worldportal.manager.WPPermissionsManager;
+import com.timvisee.worldportal.point.WPPointsManager;
+import com.timvisee.worldportal.portal.WPPortalsManager;
+import com.timvisee.worldportal.world.WPWorldManager;
 
 public class WorldPortal extends JavaPlugin {
 	
@@ -21,14 +27,19 @@ public class WorldPortal extends JavaPlugin {
 	private WPLogger log;
 	
 	// Listeners
-	// private final SCBlockListener blockListener = new SCBlockListener();
+	private final WPBlockListener blockListener = new WPBlockListener();
+	private final WPPlayerListener playerListener = new WPPlayerListener();
+	private final WPWorldListener worldListener = new WPWorldListener();
 	
 	// Managers
-	private WPPermissionsManager pm;
-	private WPEconomyManager em;
+	private WPPermissionsManager permsMan;
+	private WPEconomyManager econMan;
+	private WPWorldManager worldMan;
+	private WPPortalsManager portalMan;
+	private WPPointsManager pointMan;
 	
 	// Handlers
-	private WPMetricsHandler mh;
+	private WPMetricsHandler metricsHand;
 	
 	/**
 	 * Constructor
@@ -48,7 +59,7 @@ public class WorldPortal extends JavaPlugin {
 		// Set up the World Portal logger
 		setUpWPLogger();
 		
-		// Get Bukkit's plugin manager
+		// Get Bukkit's plugin manager instance
 		PluginManager pm = getServer().getPluginManager();
 		
 		// TODO: Set up the API manager
@@ -65,12 +76,17 @@ public class WorldPortal extends JavaPlugin {
 		// Managers
 		setUpPermissionsManager();
 		setUpEconomyManager();
+		setUpWorldManager();
+		setUpPortalsManager();
+		setUpPointsManager();
 		
 		// Handlers
 		setUpMetricsHandler();
 		
 		// Register event listeners
-		//pm.registerEvents(this.blockListener, this);
+		pm.registerEvents(this.blockListener, this);
+		pm.registerEvents(this.playerListener, this);
+		pm.registerEvents(this.worldListener, this);
 		
 		// Plugin sucesfuly enabled, show console message
 		PluginDescriptionFile pdfFile = getDescription();
@@ -86,7 +102,7 @@ public class WorldPortal extends JavaPlugin {
 	 * On disable method, called when plugin is being disabled
 	 */
 	public void onDisable() {
-		// TODO: Save unsaved data
+		// TODO: Save worlds, points, portals ...
 		
 		// Cancel all running Safe Creeper tasks
 		stopTasks();
@@ -152,8 +168,8 @@ public class WorldPortal extends JavaPlugin {
 	 * Setup the permissions manager
 	 */
 	public void setUpPermissionsManager() {
-		this.pm = new WPPermissionsManager(this.getServer(), getWPLogger());
-		this.pm.setUp();
+		this.permsMan = new WPPermissionsManager(this.getServer(), getWPLogger());
+		this.permsMan.setUp();
 	}
 	
 	/**
@@ -161,15 +177,15 @@ public class WorldPortal extends JavaPlugin {
 	 * @return permissions manager instance
 	 */
 	public WPPermissionsManager getPermissionsManager() {
-		return this.pm;
+		return this.permsMan;
 	}
 	
 	/**
 	 * Set up the economy manager
 	 */
 	public void setUpEconomyManager() {
-		this.em = new WPEconomyManager(this.getServer(), getWPLogger());
-		this.em.setUp();
+		this.econMan = new WPEconomyManager(this.getServer(), getWPLogger());
+		this.econMan.setUp();
 	}
 	
 	/**
@@ -177,15 +193,117 @@ public class WorldPortal extends JavaPlugin {
 	 * @return Economy manager instance
 	 */
 	public WPEconomyManager getEconomyManager() {
-		return this.em;
+		return this.econMan;
+	}
+	
+	/**
+	 * Set up the world manager and load all world data
+	 */
+	public void setUpWorldManager() {
+		// Show a status message
+		getWPLogger().info("Loading worlds...");
+		
+		// Save the time
+		long t = System.currentTimeMillis();
+		
+		// Construct the portal manager
+		this.worldMan = new WPWorldManager();
+		
+		// Load the portals
+		boolean result = this.worldMan.load();
+		
+		// Calculate the duration
+		long duration = System.currentTimeMillis() - t;
+		
+		// Show a status message
+		if(result)
+			getWPLogger().info("Loaded data " + String.valueOf(this.worldMan.getWorldsCount()) + " worlds, took " + String.valueOf(duration) + " ms!");
+		else
+			getWPLogger().error("An error occurred while loading the worlds!");
+	}
+	
+	/**
+	 * Get the world manager instance
+ 	 * @return World manager instance
+	 */
+	public WPWorldManager getWorldManager() {
+		return this.worldMan;
+	}
+	
+	/**
+	 * Set up the portal manager and load all portals
+	 */
+	public void setUpPortalsManager() {
+		// Show a status message
+		getWPLogger().info("Loading portals...");
+		
+		// Save the time
+		long t = System.currentTimeMillis();
+		
+		// Construct the portal manager
+		this.portalMan = new WPPortalsManager();
+		
+		// Load the portals
+		boolean result = this.portalMan.load();
+		
+		// Calculate the duration
+		long duration = System.currentTimeMillis() - t;
+		
+		// Show a status message
+		if(result)
+			getWPLogger().info("Loaded " + String.valueOf(this.portalMan.getPortalsCount()) + " portals, took " + String.valueOf(duration) + " ms!");
+		else
+			getWPLogger().error("An error occurred while loading the portals!");
+	}
+	
+	/**
+	 * Get the portals manager instance
+	 * @return Portals manager instance
+	 */
+	public WPPortalsManager getPortalManager() {
+		return this.portalMan;
+	}
+	
+	/**
+	 * Set up the points manager and and load all points
+	 */
+	public void setUpPointsManager() {
+		// Show a status message
+		getWPLogger().info("Loading points...");
+		
+		// Save the time
+		long t = System.currentTimeMillis();
+		
+		// Construct the points manager
+		this.pointMan = new WPPointsManager();
+		
+		// Load the points
+		boolean result = this.pointMan.load();
+		
+		// Calculate the duration
+		long duration = System.currentTimeMillis() - t;
+		
+		// Show a status message
+		if(result)
+			getWPLogger().info("Loaded " + String.valueOf(this.pointMan.getPointsCount()) + "points, took " + String.valueOf(duration) + " ms!");
+		else
+			getWPLogger().error("An error occured while loading the points!");
+	}
+	
+	/**
+	 * Get the points manager instance
+	 * @return Points manager instance
+	 */
+	public WPPointsManager getPointsManager() {
+		return this.pointMan;
 	}
 	
 	/**
 	 * Set up the metrics handler
 	 */
 	public void setUpMetricsHandler() {
-		this.mh = new WPMetricsHandler(getWPLogger());
-		this.mh.setUp();
+		this.metricsHand = new WPMetricsHandler(getWPLogger());
+		this.metricsHand.setUp();
 	}
 	
 	/**
@@ -193,7 +311,7 @@ public class WorldPortal extends JavaPlugin {
 	 * @return Metrics handler instance
 	 */
 	public WPMetricsHandler getMetricsHandler() {
-		return this.mh;
+		return this.metricsHand;
 	}
 	
 	/*
