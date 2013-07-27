@@ -1,20 +1,13 @@
 package com.timvisee.worldportal;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-
-import java.io.OutputStream;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
-import com.timvisee.worldportal.handler.CommandHandler;
+import com.timvisee.worldportal.handler.WPCommandHandler;
 import com.timvisee.worldportal.handler.WPMetricsHandler;
 import com.timvisee.worldportal.manager.WPEconomyManager;
 import com.timvisee.worldportal.manager.WPPermissionsManager;
@@ -256,7 +249,7 @@ public class WorldPortal extends JavaPlugin {
 	 */
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 		// Run the command trough the command handler
-		CommandHandler ch = new CommandHandler();
+		WPCommandHandler ch = new WPCommandHandler();
 		return ch.onCommand(sender, cmd, commandLabel, args);
 	}
 }
