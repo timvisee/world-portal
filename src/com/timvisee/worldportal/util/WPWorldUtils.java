@@ -120,6 +120,15 @@ public class WPWorldUtils {
 		// Check if this file exists, and return the result
 		return lf.exists();
 	}
+
+	/**
+	 * Get a world instance (World must be loaded!)
+	 * @param worldName The name of the world to get the world instance from
+	 * @return The world instance, or null if it couldn't be retrieved
+	 */
+	public static World getWorld(String worldName) {
+		return Bukkit.getWorld(worldName);
+	}
 	
 	/**
 	 * Load a world, also broadcast a message to every player that a world is being loaded
