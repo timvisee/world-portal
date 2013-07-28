@@ -297,7 +297,7 @@ public class WPPortalsManager {
 		if(!save(c, false)) {
 			// Show status if required
 			if(showStatus)
-				WorldPortal.instance.getWPLogger().error("Failed saving portals");
+				WorldPortal.instance.getWPLogger().error("Failed saving portals, an error occurred while writing file!");
 			
 			return false;
 		}
@@ -311,7 +311,8 @@ public class WPPortalsManager {
 			ex.printStackTrace();
 			
 			// Show a status message
-			WorldPortal.instance.getWPLogger().error("Failed saving portals!");
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Failed saving portals!");
 			
 			// Return false
 			return false;

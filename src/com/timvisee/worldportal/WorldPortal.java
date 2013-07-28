@@ -111,7 +111,7 @@ public class WorldPortal extends JavaPlugin {
 		this.portalMan.save(true);
 		
 		// Save all points
-		this.pointMan.save();
+		this.pointMan.save(true);
 		
 		// Save all world data
 		this.worldDataMan.saveAll(true);
@@ -286,23 +286,8 @@ public class WorldPortal extends JavaPlugin {
 		// Show a status message
 		getWPLogger().info("Loading points...");
 		
-		// Save the time
-		long t = System.currentTimeMillis();
-		
-		// Construct the points manager
-		this.pointMan = new WPPointsManager();
-		
 		// Load the points
-		boolean result = this.pointMan.load();
-		
-		// Calculate the duration
-		long duration = System.currentTimeMillis() - t;
-		
-		// Show a status message
-		if(result)
-			getWPLogger().info("Loaded " + String.valueOf(this.pointMan.getPointsCount()) + "points, took " + String.valueOf(duration) + " ms!");
-		else
-			getWPLogger().error("An error occured while loading the points!");
+		this.pointMan.load(true);
 	}
 	
 	/**

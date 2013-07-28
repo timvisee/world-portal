@@ -61,25 +61,44 @@ public class WPPointsManager {
 	
 	/**
 	 * Load the points from the default file
+	 * @param showStatus True to show loading statuses in the console
 	 * @return False if failed
 	 */
-	public boolean load() {
-		return load(getPointsFile());
+	public boolean load(boolean showStatus) {
+		return load(getPointsFile(), showStatus);
 	}
 	
 	/**
 	 * Load the points from an external file
 	 * @param f The file to load the point from
+	 * @param showStatus True to show loading statuses in the console
 	 * @return False if failed
 	 */
-	public boolean load(File f) {
+	public boolean load(File f, boolean showStatus) {
+		// Show status if required
+		if(showStatus)
+			WorldPortal.instance.getWPLogger().info("Loading points...");
+		
+		// Store the current time
+		long t = System.currentTimeMillis();
+		
 		// Make sure the file isn't null
-		if(f == null)
+		if(f == null) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Failed to load points, invalid file!");
+			
 			return false;
+		}
 		
 		// Make sure the file exists
-		if(!f.exists())
+		if(!f.exists()) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Failed to load points, file doesn't exist!");
+			
 			return false;
+		}
 		
 		// Try to load the file
 		YamlConfiguration c = null;
@@ -98,22 +117,54 @@ public class WPPointsManager {
 		}
 		
 		// Make sure the configuration file isn't null
-		if(c == null)
+		if(c == null) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Failed to load points, unable to read file!");
+			
 			return false;
+		}
 		
 		// Load the points
-		return load(c);
+		boolean result = load(c, false);
+		
+		// Calculate the loading duration
+		long duration = System.currentTimeMillis() - t;
+
+		// Show status if required
+		if(showStatus) {
+			if(result)
+				WorldPortal.instance.getWPLogger().info("Loaded " + String.valueOf(getPointsCount()) + " points, took " + String.valueOf(duration) + " ms!");
+			else
+				WorldPortal.instance.getWPLogger().error("Failed to load points!");
+		}
+		
+		// Return the result
+		return result;
 	}
 	
 	/**
-	 * Load the poratls from a YAML configuration
+	 * Load the points from a YAML configuration
 	 * @param c The YAML configuration to load the points from
+	 * @param showStatus True to show loading statuses in the console
 	 * @return False if failed
 	 */
-	public boolean load(YamlConfiguration c) {
+	public boolean load(YamlConfiguration c, boolean showStatus) {
+		// Show status if required
+		if(showStatus)
+			WorldPortal.instance.getWPLogger().info("Loading points...");
+		
+		// Store the current time
+		long t = System.currentTimeMillis();
+		
 		// Make sure the configuration isn't null
-		if(c == null)
+		if(c == null) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Failed to load points, invalid configuration!");
+			
 			return false;
+		}
 		
 		// Make sure the points section exists
 		if(!c.isConfigurationSection("points"))
@@ -123,18 +174,45 @@ public class WPPointsManager {
 		ConfigurationSection pointsSect = c.getConfigurationSection("points");
 		
 		// Load the points
-		return load(pointsSect);
+		boolean result = load(pointsSect, false);
+		
+		// Calculate the loading duration
+		long duration = System.currentTimeMillis() - t;
+		
+		// Show status if required
+		if(showStatus) {
+			if(result)
+				WorldPortal.instance.getWPLogger().info("Loaded " + String.valueOf(getPointsCount()) + " points, took " + String.valueOf(duration) + " ms!");
+			else
+				WorldPortal.instance.getWPLogger().error("Failed to load points!");
+		}
+		
+		// Return the result
+		return result;
 	}
 	
 	/**
 	 * Load the points from a configuration section
 	 * @param c The configuration section to load the points from
+	 * @param showStatus True to show loading statuses in the console
 	 * @return False if failed
 	 */
-	public boolean load(ConfigurationSection c) {
+	public boolean load(ConfigurationSection c, boolean showStatus) {
+		// Show status if required
+		if(showStatus)
+			WorldPortal.instance.getWPLogger().info("Loading points...");
+		
+		// Store the current time
+		long t = System.currentTimeMillis();
+		
 		// Make sure the configuration section isn't null
-		if(c == null)
+		if(c == null) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Failed to load points, invalid configuration section!");
+			
 			return false;
+		}
 		
 		// List the keys
 		Set<String> keys = c.getKeys(false);
@@ -164,34 +242,60 @@ public class WPPointsManager {
 		this.points.clear();
 		this.points.addAll(buff);
 		
+		// Calculate the loading duration
+		long duration = System.currentTimeMillis() - t;
+		
+		// Show status if required
+		if(showStatus)
+			WorldPortal.instance.getWPLogger().info("Loaded " + String.valueOf(buff.size()) + " points, took " + String.valueOf(duration) + " ms!");
+		
 		// Loaded successfully, return true
 		return true;
 	}
 	
 	/**
 	 * Save the current loaded list of points to the default points file
+	 * @param showStatus True to show saving statuses in the console
 	 * @return False if failed
 	 */
-	public boolean save() {
-		return save(getPointsFile());
+	public boolean save(boolean showStatus) {
+		return save(getPointsFile(), showStatus);
 	}
 	
 	/**
 	 * Save the current loaded list of points to a file
 	 * @param f The file to save the points in
+	 * @param showStatus True to show saving statuses in the console
 	 * @return False if failed
 	 */
-	public boolean save(File f) {
+	public boolean save(File f, boolean showStatus) {
+		// Show status if required
+		if(showStatus)
+			WorldPortal.instance.getWPLogger().info("Saving all loaded points...");
+		
+		// Store the current time
+		long t = System.currentTimeMillis();
+		
 		// Make sure the file isn't null
-		if(f == null)
+		if(f == null) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Saving failed, invalid file!");
+			
 			return false;
+		}
 		
 		// Construct a YAML configuration to store the points in
 		YamlConfiguration c = new YamlConfiguration();
 		
 		// Add the points to he YAML configuration
-		if(!save(c))
+		if(!save(c, false)) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Failed saving points, an error occurred while writing file!");
+			
 			return false;
+		}
 		
 		// Save the YAML configuration
 		try {
@@ -202,11 +306,19 @@ public class WPPointsManager {
 			ex.printStackTrace();
 			
 			// Show a status message
-			WorldPortal.instance.getWPLogger().error("An error occurred while saving the points!");
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Failed saving points!");
 			
 			// Return false
 			return false;
 		}
+		
+		// Calculate the save duration
+		long duration = System.currentTimeMillis() - t;
+		
+		// Show status if required
+		if(showStatus)
+			WorldPortal.instance.getWPLogger().info("Saved " + String.valueOf(getPointsCount()) + " points, took " + String.valueOf(duration) + " ms!");
 		
 		// Saved successfully, return true
 		return true;
@@ -215,21 +327,45 @@ public class WPPointsManager {
 	/**
 	 * Save the list of loaded points in a YAML configuration
 	 * @param c The YAML configuration to save the points in
+	 * @param showStatus True to show saving statuses in the console
 	 * @return False if failed
 	 */
-	public boolean save(YamlConfiguration c) {
+	public boolean save(YamlConfiguration c, boolean showStatus) {
+		// Show status if required
+		if(showStatus)
+			WorldPortal.instance.getWPLogger().info("Saving all loaded points...");
+		
+		// Store the current time
+		long t = System.currentTimeMillis();
+		
 		// Make sure the YAML configuration isn't null
-		if(c == null)
+		if(c == null) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Saving failed, invalid configuration!");
+			
 			return false;
+		}
 					
 		// Create a configuration section to save the poratls in
 		ConfigurationSection pointsSect = c.createSection("points");
 		
 		// Save the points in the configuration section
-		boolean result = save(pointsSect);
+		boolean result = save(pointsSect, false);
 		
 		// Add the current version number of World Point to the YAML configuration
 		c.set("version", WorldPortal.instance.getVersion());
+		
+		// Calculate the saving duration
+		long duration = System.currentTimeMillis() - t;
+		
+		// Show status if required
+		if(showStatus) {
+			if(result)
+				WorldPortal.instance.getWPLogger().info("Saved " + String.valueOf(getPointsCount()) + " poinst, took " + String.valueOf(duration) + " ms!");
+			else
+				WorldPortal.instance.getWPLogger().error("Saving failed!");
+		}
 		
 		// Return the result
 		return result;
@@ -238,12 +374,25 @@ public class WPPointsManager {
 	/**
 	 * Save the list of loaded points in a configuration section
 	 * @param c The configuration section to save the points in
+	 * @param showStatus True to show saving statuses in the console
 	 * @return False if failed
 	 */
-	public boolean save(ConfigurationSection c) {
+	public boolean save(ConfigurationSection c, boolean showStatus) {
+		// Show status if required
+		if(showStatus)
+			WorldPortal.instance.getWPLogger().info("Saving all loaded points...");
+		
+		// Store the current time
+		long t = System.currentTimeMillis();
+		
 		// Make sure the configuration section isn't null
-		if(c == null)
+		if(c == null) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Failed saving, invalid configuration section!");
+			
 			return false;
+		}
 		
 		// Define a counter
 		int i = 0;
@@ -259,6 +408,13 @@ public class WPPointsManager {
 			// Increase the counter
 			i++;
 		}
+		
+		// Calculate the saving duration
+		long duration = System.currentTimeMillis() - t;
+		
+		// Show status if required
+		if(showStatus)
+			WorldPortal.instance.getWPLogger().info("Saved " + String.valueOf(getPointsCount()) + " points, took " + String.valueOf(duration) + " ms!");
 		
 		// Saved successfully, return true
 		return true;
