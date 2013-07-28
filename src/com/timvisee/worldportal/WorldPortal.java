@@ -227,26 +227,22 @@ public class WorldPortal extends JavaPlugin {
 	 * Set up the world data manager and load all world data
 	 */
 	public void setUpWorldDataManager() {
-		// Show a status message
-		getWPLogger().info("Loading world data...");
-		
-		// Save the time
-		long t = System.currentTimeMillis();
-		
 		// Construct the world data manager
 		this.worldDataMan = new WPWorldDataManager();
 		
-		// Load the worlds data
-		boolean result = this.worldDataMan.load();
-		
-		// Calculate the duration
-		long duration = System.currentTimeMillis() - t;
-		
-		// Show a status message
-		if(result)
-			getWPLogger().info("Loaded data for " + String.valueOf(this.worldMan.getWorldsCount()) + " worlds, took " + String.valueOf(duration) + " ms!");
-		else
-			getWPLogger().error("An error occurred while loading the worlds data!");
+		// Load world data for each already loaded world
+		for(World w : Bukkit.getWorlds()) {
+			// Check if the world data is already loaded
+			if(!this.worldDataMan.isLoaded(w)) {
+				// Check if the world data for this world exists
+				if(this.worldDataMan.exists(w)) {
+					// Load the world data
+					this.worldDataMan.load(w, true);
+				} else {
+					// TODO: Create world data for this world!
+				}
+			}
+		}
 	}
 	
 	/**
@@ -261,26 +257,11 @@ public class WorldPortal extends JavaPlugin {
 	 * Set up the portal manager and load all portals
 	 */
 	public void setUpPortalsManager() {
-		// Show a status message
-		getWPLogger().info("Loading portals...");
-		
-		// Save the time
-		long t = System.currentTimeMillis();
-		
 		// Construct the portal manager
 		this.portalMan = new WPPortalsManager();
 		
 		// Load the portals
-		boolean result = this.portalMan.load();
-		
-		// Calculate the duration
-		long duration = System.currentTimeMillis() - t;
-		
-		// Show a status message
-		if(result)
-			getWPLogger().info("Loaded " + String.valueOf(this.portalMan.getPortalsCount()) + " portals, took " + String.valueOf(duration) + " ms!");
-		else
-			getWPLogger().error("An error occurred while loading the portals!");
+		this.portalMan.load(true);
 	}
 	
 	/**

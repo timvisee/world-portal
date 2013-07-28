@@ -61,25 +61,44 @@ public class WPPortalsManager {
 	
 	/**
 	 * Load the portals from the default file
+	 * @param showStatus True to show loading statuses in the console
 	 * @return False if failed
 	 */
-	public boolean load() {
-		return load(getPortalsFile());
+	public boolean load(boolean showStatus) {
+		return load(getPortalsFile(), showStatus);
 	}
 	
 	/**
 	 * Load the portals from an external file
 	 * @param f The file to load the portal from
+	 * @param showStatus True to show loading statuses in the console
 	 * @return False if failed
 	 */
-	public boolean load(File f) {
+	public boolean load(File f, boolean showStatus) {
+		// Show status if required
+		if(showStatus)
+			WorldPortal.instance.getWPLogger().info("Loading portals...");
+		
+		// Store the current time
+		long t = System.currentTimeMillis();
+		
 		// Make sure the file isn't null
-		if(f == null)
+		if(f == null) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Failed loading, invalid file!");
+			
 			return false;
+		}
 		
 		// Make sure the file exists
-		if(!f.exists())
+		if(!f.exists()) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Failed loading, file doesn't exist!");
+			
 			return false;
+		}
 		
 		// Try to load the file
 		YamlConfiguration c = null;
@@ -91,50 +110,114 @@ public class WPPortalsManager {
 			ex.printStackTrace();
 			
 			// Show an error message
-			WorldPortal.instance.getWPLogger().error("An error occurred while loading the portals file!");
+			WorldPortal.instance.getWPLogger().error("Failed loading, invalid file contents!");
 			
 			// Return false
 			return false;
 		}
 		
 		// Make sure the configuration file isn't null
-		if(c == null)
+		if(c == null) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Failed loading, invalid file contents!");
+			
 			return false;
+		}
 		
 		// Load the poratls
-		return load(c);
+		boolean result = load(c, false);
+
+		// Calculate the loading duration
+		long duration = System.currentTimeMillis() - t;
+
+		// Show status if required
+		if(showStatus) {
+			if(result)
+				WorldPortal.instance.getWPLogger().info("Loaded " + String.valueOf(getPortalsCount()) + " portals, took " + String.valueOf(duration) + " ms!");
+			else
+				WorldPortal.instance.getWPLogger().error("Failed loading portals!");
+		}
+		
+		// Return the result
+		return result;
 	}
 	
 	/**
 	 * Load the poratls from a YAML configuration
 	 * @param c The YAML configuration to load the portals from
+	 * @param showStatus True to show loading statuses in the console
 	 * @return False if failed
 	 */
-	public boolean load(YamlConfiguration c) {
+	public boolean load(YamlConfiguration c, boolean showStatus) {
+		// Show status if required
+		if(showStatus)
+			WorldPortal.instance.getWPLogger().info("Loading portals...");
+		
+		// Store the current time
+		long t = System.currentTimeMillis();
+		
 		// Make sure the configuration isn't null
-		if(c == null)
+		if(c == null) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Failed loading portals, invalid configuration!");
+			
 			return false;
+		}
 		
 		// Make sure the portals section exists
-		if(!c.isConfigurationSection("portals"))
+		if(!c.isConfigurationSection("portals")) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Failed loading portals, invalid file contents!");
+			
 			return false;
+		}
 		
 		// Select the right configuration section
 		ConfigurationSection portalsSect = c.getConfigurationSection("portals");
 		
 		// Load the portals
-		return load(portalsSect);
+		boolean result = load(portalsSect, false);
+		
+		// Calculate the loading duration
+		long duration = System.currentTimeMillis() - t;
+		
+		// Show status if required
+		if(showStatus) {
+			if(result)
+				WorldPortal.instance.getWPLogger().info("Loaded " + String.valueOf(getPortalsCount()) + " portals, took " + String.valueOf(duration) + " ms!");
+			else
+				WorldPortal.instance.getWPLogger().error("Failed loading portals!");
+		}
+		
+		// Return the result
+		return result;
 	}
 	
 	/**
 	 * Load the portals from a configuration section
 	 * @param c The configuration section to load the portals from
+	 * @param showStatus True to show loading statuses in the console
 	 * @return False if failed
 	 */
-	public boolean load(ConfigurationSection c) {
+	public boolean load(ConfigurationSection c, boolean showStatus) {
+		// Show status if required
+		if(showStatus)
+			WorldPortal.instance.getWPLogger().info("Loading portals...");
+		
+		// Store the current time
+		long t = System.currentTimeMillis();
+		
 		// Make sure the configuration section isn't null
-		if(c == null)
+		if(c == null) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Failed loading portals, invalid configuration section!");
+			
 			return false;
+		}
 		
 		// List the keys
 		Set<String> keys = c.getKeys(false);
@@ -164,34 +247,60 @@ public class WPPortalsManager {
 		this.portals.clear();
 		this.portals.addAll(buff);
 		
+		// Calculate the saving duration
+		long duration = System.currentTimeMillis() - t;
+		
+		// Show status if required
+		if(showStatus)
+			WorldPortal.instance.getWPLogger().info("Loaded " + String.valueOf(buff.size()) + " portals, took " + String.valueOf(duration) + " ms!");
+		
 		// Loaded successfully, return true
 		return true;
 	}
 	
 	/**
 	 * Save the current loaded list of portals to the default portals file
+	 * @param showStatus True to show saving statuses in the console
 	 * @return False if failed
 	 */
-	public boolean save() {
-		return save(getPortalsFile());
+	public boolean save(boolean showStatus) {
+		return save(getPortalsFile(), showStatus);
 	}
 	
 	/**
 	 * Save the current loaded list of portals to a file
 	 * @param f The file to save the portals in
+	 * @param showStatus True to show saving statuses in the console
 	 * @return False if failed
 	 */
-	public boolean save(File f) {
+	public boolean save(File f, boolean showStatus) {
+		// Show status if required
+		if(showStatus)
+			WorldPortal.instance.getWPLogger().info("Saving all loaded portals...");
+		
+		// Store the current time
+		long t = System.currentTimeMillis();
+		
 		// Make sure the file isn't null
-		if(f == null)
+		if(f == null) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Failed saving portals, invalid file!");
+			
 			return false;
+		}
 		
 		// Construct a YAML configuration to store the portals in
 		YamlConfiguration c = new YamlConfiguration();
 		
 		// Add the portals to he YAML configuration
-		if(!save(c))
+		if(!save(c, false)) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Failed saving portals");
+			
 			return false;
+		}
 		
 		// Save the YAML configuration
 		try {
@@ -202,11 +311,18 @@ public class WPPortalsManager {
 			ex.printStackTrace();
 			
 			// Show a status message
-			WorldPortal.instance.getWPLogger().error("An error occurred while saving the portals!");
+			WorldPortal.instance.getWPLogger().error("Failed saving portals!");
 			
 			// Return false
 			return false;
 		}
+
+		// Calculate the saving duration
+		long duration = System.currentTimeMillis() - t;
+
+		// Show status if required
+		if(showStatus)
+			WorldPortal.instance.getWPLogger().info("Saved " + String.valueOf(getPortalsCount()) + " portals, took " + String.valueOf(duration) + " ms!");
 		
 		// Saved successfully, return true
 		return true;
@@ -215,21 +331,45 @@ public class WPPortalsManager {
 	/**
 	 * Save the list of loaded portals in a YAML configuration
 	 * @param c The YAML configuration to save the portals in
+	 * @param showStatus True to show saving statuses in the console
 	 * @return False if failed
 	 */
-	public boolean save(YamlConfiguration c) {
+	public boolean save(YamlConfiguration c, boolean showStatus) {
+		// Show status if required
+		if(showStatus)
+			WorldPortal.instance.getWPLogger().info("Saving all loaded portals...");
+		
+		// Store the current time
+		long t = System.currentTimeMillis();
+		
 		// Make sure the YAML configuration isn't null
-		if(c == null)
+		if(c == null) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Saving failed, invalid configuration!");
+			
 			return false;
+		}
 					
 		// Create a configuration section to save the poratls in
 		ConfigurationSection portalsSect = c.createSection("portals");
 		
 		// Save the portals in the configuration section
-		boolean result = save(portalsSect);
+		boolean result = save(portalsSect, false);
 		
 		// Add the current version number of World Portal to the YAML configuration
 		c.set("version", WorldPortal.instance.getVersion());
+
+		// Calculate the save duration
+		long duration = System.currentTimeMillis() - t;
+
+		// Show status if required
+		if(showStatus) {
+			if(result)
+				WorldPortal.instance.getWPLogger().info("Saved " + String.valueOf(getPortalsCount()) + " saved, took " + String.valueOf(duration) + " ms!");
+			else
+				WorldPortal.instance.getWPLogger().error("Failed saving portals!");
+		}
 		
 		// Return the result
 		return result;
@@ -238,12 +378,25 @@ public class WPPortalsManager {
 	/**
 	 * Save the list of loaded portals in a configuration section
 	 * @param c The configuration section to save the portals in
+	 * @param showStatus True to show saving statuses in the console
 	 * @return False if failed
 	 */
-	public boolean save(ConfigurationSection c) {
+	public boolean save(ConfigurationSection c, boolean showStatus) {
+		// Show status if required
+		if(showStatus)
+			WorldPortal.instance.getWPLogger().info("Saving all loaded portals...");
+		
+		// Store the current time
+		long t = System.currentTimeMillis();
+		
 		// Make sure the configuration section isn't null
-		if(c == null)
+		if(c == null) {
+			// Show status if required
+			if(showStatus)
+				WorldPortal.instance.getWPLogger().error("Saving failed, Invalid configuration!");
+			
 			return false;
+		}
 		
 		// Define a counter
 		int i = 0;
@@ -259,6 +412,14 @@ public class WPPortalsManager {
 			// Increase the counter
 			i++;
 		}
+		
+		// Calculate the saving duration
+		long duration = System.currentTimeMillis() - t;
+		
+
+		// Show status if required
+		if(showStatus)
+			WorldPortal.instance.getWPLogger().info("Saved " + String.valueOf(getPortalsCount()) + " portals, took " + String.valueOf(duration) + " ms!");
 		
 		// Saved successfully, return true
 		return true;

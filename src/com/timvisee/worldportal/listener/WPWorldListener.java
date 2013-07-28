@@ -28,7 +28,7 @@ public class WPWorldListener implements Listener {
 		// Check if any world data exists for the loaded world
 		if(wdm.exists(w)) {
 			// Load the world data for the current world
-			wdm.load(w);
+			wdm.load(w, true);
 			
 		} else {
 			// TODO: Create the world data!
@@ -47,6 +47,6 @@ public class WPWorldListener implements Listener {
 		WorldPortal.instance.getWorldManager().unregisterWorld(w);
 		
 		// Unload any world data for the unloaded world
-		WorldPortal.instance.getWorldDataManager().unload(w, true);
+		WorldPortal.instance.getWorldDataManager().unload(w, true, true);
 	}
 }
