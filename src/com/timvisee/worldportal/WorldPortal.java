@@ -107,7 +107,14 @@ public class WorldPortal extends JavaPlugin {
 	 * On disable method, called when plugin is being disabled
 	 */
 	public void onDisable() {
-		// TODO: Save worlds, points, portals ...
+		// Save all portals
+		this.portalMan.save(true);
+		
+		// Save all points
+		this.pointMan.save();
+		
+		// Save all world data
+		this.worldDataMan.saveAll(true);
 		
 		// Cancel all running Safe Creeper tasks
 		stopTasks();
