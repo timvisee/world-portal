@@ -12,7 +12,6 @@ I'm happy to release a hotfix is required if the plugin breaks on the newest Min
 
 If a hotfix is desired, be sure to contact me, preferrably through [Bukkit](https://dev.bukkit.org/members/timvisee).
 
-### License: 
-GNU GPL v3.0
-
-More Information? See: http://dev.bukkit.org/bukkit-plugins/dungeon-maze/
+### License
+This project is released under the GNU GPL-3.0 license.
+Check out the [LICENSE](LICENSE) file for more information.
