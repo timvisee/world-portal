@@ -2,6 +2,7 @@
 
 # Permissions settings
 permissions:
+    alwaysPermitOp: true
     usePermissions: true
     enableBypassPermissions: true
     permissionsSystems:
@@ -11,13 +12,11 @@ permissions:
             enabled: true
         bPermissions:
             enabled: true
-        EssentialsGroupManager:
+        GroupManager:
             enabled: true
         zPermissions:
             enabled: true
         Vault:
-            enabled: true
-        Permissions:
             enabled: true
 
 # Economy settings

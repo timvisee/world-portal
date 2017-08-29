@@ -1,5 +1,6 @@
 package com.timvisee.worldportal;
 
+import com.timvisee.worldportal.manager.PermissionsManager;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -15,7 +16,6 @@ import com.timvisee.worldportal.listener.WPBlockListener;
 import com.timvisee.worldportal.listener.WPPlayerListener;
 import com.timvisee.worldportal.listener.WPWorldListener;
 import com.timvisee.worldportal.manager.WPEconomyManager;
-import com.timvisee.worldportal.manager.WPPermissionsManager;
 import com.timvisee.worldportal.point.WPPointsManager;
 import com.timvisee.worldportal.portal.WPPortalsManager;
 import com.timvisee.worldportal.world.WPWorldDataManager;
@@ -35,7 +35,7 @@ public class WorldPortal extends JavaPlugin {
 	private final WPWorldListener worldListener = new WPWorldListener();
 	
 	// Managers
-	private WPPermissionsManager permsMan;
+	private PermissionsManager permsMan;
 	private WPEconomyManager econMan;
 	private WPWorldManager worldMan;
 	private WPWorldDataManager worldDataMan;
@@ -180,15 +180,28 @@ public class WorldPortal extends JavaPlugin {
 	 * Setup the permissions manager
 	 */
 	public void setUpPermissionsManager() {
-		this.permsMan = new WPPermissionsManager(this.getServer(), getWPLogger());
-		this.permsMan.setUp();
+	    // Determine whether to use permissions
+		boolean usePerms = getConfig().getBoolean("permissions.usePermissions", true);
+
+		// Set up and start the permissions managj
+		this.permsMan = new PermissionsManager(
+				Bukkit.getServer(),
+				WorldPortal.instance,
+				getLogger(),
+				usePerms
+		);
+
+		if(usePerms)
+            this.permsMan.setup();
+
+		this.permsMan.setAlwaysPermitOp(getConfig().getBoolean("permissions.alwaysPermitOp", false));
 	}
 	
 	/**
 	 * Get the permissions manager instance
 	 * @return permissions manager instance
 	 */
-	public WPPermissionsManager getPermissionsManager() {
+	public PermissionsManager getPermissionsManager() {
 		return this.permsMan;
 	}
 	
