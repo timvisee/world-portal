@@ -1,0 +1,83 @@
+# Inside this file you can change the messages that will be shown to the players when they use World Portal.
+# You can use color codes using the & sign, for example for a yellow color '&eText'
+
+# Teleport Messages
+tpToWorldMessage: '&e[WorldPortal] Teleported to the world ''&f%worldname%&e'' '
+
+# World generation and load broadcast messages
+worldGenerationBroadcastMessage: '&d[WorldPortal] Generating a new world, there''s probably some lag for a little while'
+worldGenerationBroadcastMessageDone: '&d[WorldPortal] World generation complete!'
+worldLoadBroadcastMessage: '&d[WorldPortal] Loading world, there''s probably some lag for a little while'
+worldLoadBroadcastMessageDone: '&d[WorldPortal] World succesfully loaded!'
+
+# WorldPortal destroy
+noDestroyPermissionMessage: '&e[WorldPortal] &4Don''t destroy a WorldPortal!'
+
+# Create command messages
+createModeEnabled:
+    - '&e[WorldPortal] Creation-mode &aenabled'
+    - '&e[WorldPortal] Right-click on a object to create a WorldPortal'
+    - '&e[WorldPortal] Select a &fSign&e, &fLever&e, &fPressureplate&e or a &fbutton'
+    - '&e[WorldPortal] Use &f/wp createstop&e to disable the creationmode'
+createModeDisabled: '&e[WorldPortal] Creation-mode &4disabled'
+newWorldPortalSelectedMessage: '&e[WorldPortal] &aNew world portal selected'
+worldPortalAlreadyLinkedMessage: '&e[WorldPortal] &4This already is a world portal!'
+selectNewWorldMessage: '&e[WorldPortal] Which world should be linked? Enter the world name into the chat. It can be a new world'
+worldPortalWorldLinkedMessage: '&e[WorldPortal] World ''&f%worldname%&e'' linked'
+selectNewEnvironmentMessage:
+    - '&e[WorldPortal] Select the environment for the new world. Enter the environment type in the chat.'
+    - '&e[WorldPortal] Choose from &fnormal&e, &fnether&e or &fend'
+worldPortalEnvironmentSelected: '&e[WorldPortal] &aEnvironment succesfully set'
+selectedInvalidEvironment:
+    - '&e[WorldPortal] &4Invalid environment!'
+    - '&e[WorldPortal] Choose from &fnormal&e, &fnether&e or &fend'
+worldPortalCreateGenerateWorld: '&e[WorldPortal] Generating world, this may take some time. Please wait for a completion message.'
+worldPortalCreateGenerateWorldDone: '&e[WorldPortal] &aWorld succesfully created'
+selectNewSpawnMessage:
+    - '&e[WorldPortal] Select the spawn point in the linked world. Enter the value in the chat.'
+    - '&e[WorldPortal] Choose from &fspawn&e, &fhere&e, &f<X> <Z>&e or &f<X> <Y> <Z>'
+selectedWorldPortalSpawn: '&e[WorldPortal] &aThe spawnpoint has been set'
+selectedInvalidSpawnpoint:
+    - '&e[WorldPortal] &4Invalid spawn point!'
+    - '&e[WorldPortal] Choose from &fspawn&e, &fhere&e, &f<X> <Z>&e or &f<X> <Y> <Z>'
+selectedInvalidDegrees:
+    - '&e[WorldPortal] &4Invalid degrees!'
+    - '&e[WorldPortal] Choose from 0 to 360'
+worldPortalCreateComplete: '&e[WorldPortal] &aWorld portal succesfully created!'
+noCreatePermission: '&e[WorldPortal] &4You don''t have permisson'
+
+# Remove command messages
+removeModeEnabled:
+    - '&e[WorldPortal] Remove-mode &aenabled'
+    - '&e[WorldPortal] Right-click on a WorldPortal to remove it'
+    - '&e[WorldPortal] Remove a &fSign&e, &fLever&e, &fPressureplate&e or a &fbutton&e'
+    - '&e[WorldPortal] Use &f/wp removestop &eto disable the remove-mode'
+removeModeDisabled: '&e[WorldPortal] Remove-mode &4disabled'
+worldPortalRemovedMessage: '&e[WorldPortal] &aWorld Portal succesfully unlinked!'
+noRemovePermission: '&e[WorldPortal] &4You don''t have permisson'
+
+# Teleport command messages
+teleportWorldNotExists: '&e[WorldPortal] &4The world ''&f%worldname&4'' doesn''t exists!'
+noTeleportCommandPermission: '&e[WorldPortal] &4You don''t have permisson'
+unknownTeleportCommand:
+    - '&e[WorldPortal] &4Unknown command values! &eUse:'
+    - '&e[WorldPortal]   &f/wp tp <world>'
+    - '&e[WorldPortal]   &f/wp tp <world> <x> <z>'
+    - '&e[WorldPortal]   &f/wp tp <world> <x> <y> <z>'
+
+# Info command messages
+infoCreationModeEnabled: '&e[WorldPortal] Creation-mode &aenabled'
+infoCreationModeDisabled: '&e[WorldPortal] Creation-mode &4disabled'
+infoRemoveModeEnabled: '&e[WorldPortal] Remove-mode &aenabled'
+infoRemoveModeDisabled: '&e[WorldPortal] Remove-mode &4disabled'
+
+# Save command messages
+worldPortalListSaved: '&e[WorldPortal] &aSuccesfully saved!'
+noSavePermission: '&e[WorldPortal] &4You don''t have permisson'
+
+# Reload command messages
+worldPortalListReloaded: '&e[WorldPortal] &aSuccesfully reloaded!'
+noReloadPermission: '&e[WorldPortal] &4You don''t have permisson'
+
+# Unknown command (by typing a wrong command that starts with /wp)
+unknownCommandMessage: '&e[WorldPortal] &4Unknown command! &eTry &f/wp create'

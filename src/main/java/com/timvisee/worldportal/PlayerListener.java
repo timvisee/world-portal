@@ -53,7 +53,7 @@ public class PlayerListener implements Listener {
 			} else if(plugin.WPRemoveUsersEnabled(player)) {
 				if(blockTypeId == 63 || blockTypeId == 68 || blockTypeId == 69 || blockTypeId == 70 || blockTypeId == 72 || blockTypeId == 77) {
 					plugin.removeWorldPortal(block, false);
-					player.sendMessage(plugin.getMessage("worldPortalRemovedMessage", "&e[World Portal] &aWorld Portal succesfully unlinked!"));
+					player.sendMessage(plugin.getMessage("worldPortalRemovedMessage", "&e[WorldPortal] &aWorld Portal succesfully unlinked!"));
 					event.setCancelled(true);
 				}
 			} else {
@@ -94,8 +94,8 @@ public class PlayerListener implements Listener {
 					event.setCancelled(true);
 				} else {
 					player.sendMessage(ChatColor.DARK_RED + message);
-					String[] defaultMessages = {"&e[World Portal] &4Invalid environment!",
-							"&e[World Portal] Chose from &fnormal&e, &fnether&e or &fend"};
+					String[] defaultMessages = {"&e[WorldPortal] &4Invalid environment!",
+							"&e[WorldPortal] Chose from &fnormal&e, &fnether&e or &fend"};
 					plugin.sendMessageList(player, "selectedInvalidEvironment", Arrays.asList(defaultMessages));
 					event.setCancelled(true);
 				}
@@ -130,7 +130,7 @@ public class PlayerListener implements Listener {
 					
 					if(error) {
 						player.sendMessage(ChatColor.DARK_RED + message);
-						String[] defaultMessages = {"&e[World Portal] &4Invalid spawn point!", "&e[World Portal] Choose from &fspawn&e, &f<X> <Z>&e or &f<X> <Y> <Z>"};
+						String[] defaultMessages = {"&e[WorldPortal] &4Invalid spawn point!", "&e[WorldPortal] Choose from &fspawn&e, &f<X> <Z>&e or &f<X> <Y> <Z>"};
 						plugin.sendMessageList(player, "selectedInvalidSpawnpoint", Arrays.asList(defaultMessages));
 					}
 					
@@ -144,7 +144,7 @@ public class PlayerListener implements Listener {
 					event.setCancelled(true);
 				} else {
 					player.sendMessage(ChatColor.DARK_RED + message);
-					String[] defaultMessages = {"&e[World Portal] &4Invalid degrees!", "&e[World Portal] Choose from 0 to 360"};
+					String[] defaultMessages = {"&e[WorldPortal] &4Invalid degrees!", "&e[WorldPortal] Choose from 0 to 360"};
 					plugin.sendMessageList(player, "selectedInvalidDegrees", Arrays.asList(defaultMessages));
 					event.setCancelled(true);
 				}

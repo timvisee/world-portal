@@ -25,7 +25,7 @@ public class BlockListener implements Listener {
 			if(id == 63 || id == 68 || id == 69 || id == 70 || id == 72 || id == 77) {
 				if(plugin.isWorldPortal(world, block)) {
 					event.setCancelled(true);
-					player.sendMessage(plugin.getMessage("noDestroyPermissionMessage", "&e[World Portal] &4Don't destroy a World Portal!"));
+					player.sendMessage(plugin.getMessage("noDestroyPermissionMessage", "&e[WorldPortal] &4Don't destroy a WorldPortal!"));
 					event.setCancelled(true);
 				}
 			}
