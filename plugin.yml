@@ -1,15 +1,14 @@
-name: WorldPortal
-description: 'Multi-World teleportation plugin'
-main: com.timvisee.worldportal.WorldPortal
-version: 0.3
-load: startup
-author: 'timvisee'
-website: 'http://timvisee.com/'
-softdepend: [PermissionsEx, bPermissions, zPermissions, EssentialsGroupManager, Permissions, SimpleEconomy, BOSEconomy, iConomy, Vault] #hack to fix trove errors
+name: World Portal
+description: 'Create portals using signs, pressureplates, buttons and more!'
+version: 0.2.7.1
+main: me.timvisee.WorldPortal.WorldPortal
+author: timvisee
+website: http://timvisee.com/
+softdepend: [PermissionsEx, bPermissions, GroupManager, zPermissions, Permissions, Vault] #hack to fix trove errors
 commands:
-  worldportal:
-    description: World Portal command
-    usage: /worldportal <arguments>
   wp:
     description: World Portal command
-    usage: /wp <arguments>
+    usage: /wp
+  worldportal:
+    description: World Portal command
+    usage: /worldportal

@@ -1,0 +1,14 @@
+# In this config file you can change some settings for World Portal
+
+# The world portals list file
+WorldPortalsListFile: 'World Portals.list'
+
+# Portals
+WorldPortalProtection: true
+
+# Show teleportation message (edit message in the message.yml file)
+showMessageOnTeleportation: true
+
+# Broadcast message on world generation and world loading (edit messages in the message.yml file)
+broadcastMessageOnWorldGeneration: true
+broadcastMessageOnWorldLoad: true
