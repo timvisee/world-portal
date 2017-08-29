@@ -1,4 +1,4 @@
-package me.timvisee.WorldPortal;
+package com.timvisee.worldportal;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
@@ -16,8 +16,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
-
-import me.timvisee.WorldPortal.WorldPortalPlayerListener;
 
 import org.anjocaido.groupmanager.GroupManager;
 import org.anjocaido.groupmanager.permissions.AnjoPermissionsHandler;

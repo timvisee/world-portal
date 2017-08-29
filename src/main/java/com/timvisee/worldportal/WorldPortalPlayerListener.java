@@ -1,6 +1,4 @@
-package me.timvisee.WorldPortal;
-
-import me.timvisee.WorldPortal.WorldPortal;
+package com.timvisee.worldportal;
 
 import java.util.Arrays;
 import java.util.logging.Logger;
@@ -15,7 +13,6 @@ import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.Location;
 
 public class WorldPortalPlayerListener implements Listener {

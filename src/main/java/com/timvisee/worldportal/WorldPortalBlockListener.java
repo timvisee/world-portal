@@ -1,4 +1,4 @@
-package me.timvisee.WorldPortal;
+package com.timvisee.worldportal;
 
 import org.bukkit.World;
 import org.bukkit.block.Block;

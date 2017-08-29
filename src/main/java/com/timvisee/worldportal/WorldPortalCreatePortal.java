@@ -1,4 +1,4 @@
-package me.timvisee.WorldPortal;
+package com.timvisee.worldportal;
 
 import java.util.Arrays;
 import java.util.HashMap;
