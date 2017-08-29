@@ -1,9 +1,5 @@
 package com.timvisee.worldportal;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.logging.Logger;
-
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -11,10 +7,14 @@ import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
-public class WorldPortalCreatePortal {
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.logging.Logger;
+
+public class CreatePortal {
 	public static Logger log = Logger.getLogger("Minecraft");
 	public static WorldPortal plugin;
-	public static WorldPortalPlayerListener playerListener;
+	public static PlayerListener playerListener;
 
 	public final HashMap<Player, Integer> wpCreateUsers = new HashMap<Player, Integer>();
 	
@@ -25,10 +25,10 @@ public class WorldPortalCreatePortal {
 	public final HashMap<Player, String> wpCreatingWorldPortalWorldSpawnLocation = new HashMap<Player, String>(); 
 	public final HashMap<Player, Integer> wpCreatingWorldPortalLookingDirection = new HashMap<Player, Integer>(); 
 
-	public WorldPortalCreatePortal(WorldPortal instance) {
+	public CreatePortal(WorldPortal instance) {
 		plugin = instance;
 	}
-	public WorldPortalCreatePortal(WorldPortalPlayerListener instance) {
+	public CreatePortal(PlayerListener instance) {
 		playerListener = instance;
 	}
 	

@@ -2,10 +2,10 @@ package com.timvisee.worldportal;
 
 import org.bukkit.event.Listener;
 
-public class WorldPortalEntityListener implements Listener {
+public class EntityListener implements Listener {
 	public static WorldPortal plugin;
 
-	public WorldPortalEntityListener(WorldPortal instance) {
+	public EntityListener(WorldPortal instance) {
 		plugin = instance;
 	}
 	

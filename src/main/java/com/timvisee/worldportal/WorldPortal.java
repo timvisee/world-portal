@@ -25,10 +25,10 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 
 	public static Logger log = Logger.getLogger("Minecraft");
 	
-	private final WorldPortalBlockListener blockListener = new WorldPortalBlockListener(this);
-	private final WorldPortalEntityListener entityListener = new WorldPortalEntityListener(this);
-	private final WorldPortalPlayerListener playerListener = new WorldPortalPlayerListener(this);
-	public final WorldPortalCreatePortal createPortal = new WorldPortalCreatePortal(this);
+	private final BlockListener blockListener = new BlockListener(this);
+	private final EntityListener entityListener = new EntityListener(this);
+	private final PlayerListener playerListener = new PlayerListener(this);
+	public final CreatePortal createPortal = new CreatePortal(this);
 
 	private File worldPortalsFile = new File("plugins/World Portal/World Portals.list");
 	private File worldPortalConfigFile = new File("plugins/World Portal/config.yml");

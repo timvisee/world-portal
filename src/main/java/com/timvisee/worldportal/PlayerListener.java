@@ -1,9 +1,7 @@
 package com.timvisee.worldportal;
 
-import java.util.Arrays;
-import java.util.logging.Logger;
-
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -13,13 +11,15 @@ import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.Location;
 
-public class WorldPortalPlayerListener implements Listener {
+import java.util.Arrays;
+import java.util.logging.Logger;
+
+public class PlayerListener implements Listener {
 	public static Logger log = Logger.getLogger("Minecraft");
 	public static WorldPortal plugin;
 
-	public WorldPortalPlayerListener(WorldPortal instance) {
+	public PlayerListener(WorldPortal instance) {
 		plugin = instance;
 	}
 	
