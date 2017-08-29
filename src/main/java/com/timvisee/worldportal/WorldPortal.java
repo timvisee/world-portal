@@ -1,47 +1,28 @@
 package com.timvisee.worldportal;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.logging.Logger;
-
-import org.anjocaido.groupmanager.GroupManager;
-import org.anjocaido.groupmanager.permissions.AnjoPermissionsHandler;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.World.Environment;
-import org.bukkit.WorldCreator;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
-import org.bukkit.entity.Player;
 
-import ru.tehkode.permissions.PermissionManager;
-import ru.tehkode.permissions.PermissionUser;
-import ru.tehkode.permissions.bukkit.PermissionsEx;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.logging.Logger;
 
 public class WorldPortal extends JavaPlugin implements CommandExecutor {
+
 	public static Logger log = Logger.getLogger("Minecraft");
 	
 	private final WorldPortalBlockListener blockListener = new WorldPortalBlockListener(this);
@@ -54,19 +35,9 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 	private File worldPortalLangFile = new File("plugins/World Portal/messages.yml");
 	
 	public final List<Player> wpRemoveUsers = new ArrayList<Player>();
-	
-	/*
-	 * 0 = none
-	 * 1 = PermissionsEx
-	 * 2 = PermissionsBukkit
-	 * 3 = bPermissions
-	 * 4 = Essentials Group Manager
-	 * 5 = Permissions
-	 */
-	private int permissionsSystem = 0;
-	private PermissionManager pexPermissions;
-	private GroupManager groupManagerPermissions;
-	
+
+	private PermissionsManager permsMan;
+
 	List<String> worldPortals = new ArrayList<String>();
 	List<String> movedTooQuicklyIgnoreList = new ArrayList<String>();
 	
@@ -90,8 +61,8 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 		pm.registerEvents(this.entityListener, this);
 		pm.registerEvents(this.playerListener, this);
 		
-		// Setup the permission system
-		setupPermissions();
+		// Setup the permissions manager
+		setUpPermissionsManager();
 		
 		// Load all the world portals in the local list
 		loadWorldPortals();
@@ -108,129 +79,56 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 		log.info("[World Portal] World Portal v" + pdfFile.getVersion() + " Disabled");
 	}
 	
-	private void setupPermissions() {
-		// Reset permissions
-		permissionsSystem = 0;
-		
-		// Check PermissionsEx system
-		Plugin testPex = this.getServer().getPluginManager().getPlugin("PermissionsEx");
-		if(testPex != null) {
-			pexPermissions = PermissionsEx.getPermissionManager();
-			if(pexPermissions != null) {
-				permissionsSystem = 1;
-				
-				System.out.println("[World Portal] Hooked into PermissionsEx!");
-				return;
-			}
-		}
-		
-		// Check PermissionsBukkit system
-		Plugin testBukkitPerms = this.getServer().getPluginManager().getPlugin("PermissionsBukkit");
-		if(testBukkitPerms != null) {
-			permissionsSystem = 2;
-			System.out.println("[World Portal] Hooked into PermissionsBukkit!");
-			return;
-		}
-		
-		// Check bPermissions system
-		/*
-		 * Not available yet!
-		 */
-		
-		// Check Essentials Group Manager system
-		final PluginManager pluginManager = getServer().getPluginManager();
-		final Plugin GMplugin = pluginManager.getPlugin("GroupManager");
-		if (GMplugin != null && GMplugin.isEnabled())
-		{
-			permissionsSystem = 4;
-			groupManagerPermissions = (GroupManager)GMplugin;
-            System.out.println("[World Portal] Hooked into Essentials Group Manager!");
-            return;
-		}
+    /**
+	 * Setup the permissions manager
+	 */
+	public void setUpPermissionsManager() {
+	    // Determine whether to use permissions
+		boolean usePerms = getConfig().getBoolean("permissions.usePermissions", true);
 
-	    // None of the permissions systems worked >:c.
-	    permissionsSystem = 0;
-	    System.out.println("[World Portal] No Permissions system found! Permissions disabled!");
-	}
-	
-	public boolean usePermissions() {
-		if(permissionsSystem == 0) {
-			return false;
-		}
-		return true;
-	}
-	
-	public int getPermissionsSystem() {
-		return permissionsSystem;
-	}
-	
-	public boolean hasPermission(Player player, String permissionNode) {
-		if(usePermissions() == false) {
-			return false;
-		}
-		
-		// Using PermissionsEx
-		if(getPermissionsSystem() == 1) {
-			PermissionUser user  = PermissionsEx.getUser(player);
-			return user.has(permissionNode);
-		}
-		
-		// Using PermissionsBukkit
-		if(getPermissionsSystem() == 2) {
-			return player.hasPermission(permissionNode);
-		}
-		
-		// Using bPemissions
-		// Available soon!
-		
-		// Using Essentials Group Manager
-		if(getPermissionsSystem() == 4) {
-			final AnjoPermissionsHandler handler = groupManagerPermissions.getWorldsHolder().getWorldPermissions(player);
-			if (handler == null)
-			{
-				return false;
-			}
-			return handler.has(player, permissionNode);
-		}
+		// Set up and start the permissions managj
+		this.permsMan = new PermissionsManager(
+				Bukkit.getServer(),
+				this,
+				getLogger(),
+				usePerms
+		);
 
-		return false;
+		// Set up the permissions manager
+		if(usePerms)
+            this.permsMan.setup();
+
+		// Set whether to always permit OP players
+		this.permsMan.setAlwaysPermitOp(getConfig().getBoolean("permissions.alwaysPermitOp", false));
+	}
+
+	/**
+	 * Get the permissions manager instance
+	 * @return permissions manager instance
+	 */
+	public PermissionsManager getPermissionsManager() {
+		return this.permsMan;
 	}
 
 	public boolean canUsePortal(Player player) {
-	    if (usePermissions()) {
-	        return hasPermission(player, "worldportal.use");
-	    }
-	    return true;
+	    return getPermissionsManager().hasPermission(player, "worldportal.use", true);
 	}
+
 	public boolean canUseWPCreate(Player player) {
-	    if (usePermissions()) {
-	        return hasPermission(player, "worldportal.create");
-	    }
-	    return player.isOp();
+		return getPermissionsManager().hasPermission(player, "worldportal.create", player.isOp());
 	}
+
 	public boolean canUseWPRemove(Player player) {
-	    if (usePermissions()) {
-	        return hasPermission(player, "worldportal.remove");
-	    }
-	    return player.isOp();
+		return getPermissionsManager().hasPermission(player, "worldportal.remove", player.isOp());
 	}
 	public boolean canUseWPTeleport(Player player) {
-	    if (usePermissions()) {
-	        return hasPermission(player, "worldportal.teleport");
-	    }
-	    return player.isOp();
+		return getPermissionsManager().hasPermission(player, "worldportal.teleport", player.isOp());
 	}
 	public boolean canUseWPSave(Player player) {
-	    if (usePermissions()) {
-	        return hasPermission(player, "worldportal.save");
-	    }
-	    return player.isOp();
+		return getPermissionsManager().hasPermission(player, "worldportal.save", player.isOp());
 	}
 	public boolean canUseWPReload(Player player) {
-	    if (usePermissions()) {
-	        return hasPermission(player, "worldportal.reload");
-	    }
-	    return player.isOp();
+		return getPermissionsManager().hasPermission(player, "worldportal.reload", player.isOp());
 	}
 	
 	public void saveWorldPortals() {
@@ -283,9 +181,6 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 				dis.close();
 				
 				log.info("[World Portal] World Portals loaded");
-	        } catch (FileNotFoundException e) {
-	        	e.printStackTrace();
-	    		log.info("[World Portal] Error by loading World Portals");
 	        } catch (IOException e) {
 	        	e.printStackTrace();
 	    		log.info("[World Portal] Error by loading World Portals");

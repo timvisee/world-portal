@@ -12,3 +12,21 @@ showMessageOnTeleportation: true
 # Broadcast message on world generation and world loading (edit messages in the message.yml file)
 broadcastMessageOnWorldGeneration: true
 broadcastMessageOnWorldLoad: true
+
+# Permissions settings
+permissions:
+    alwaysPermitOp: true
+    usePermissions: true
+    permissionsSystems:
+        PermissionsEx:
+            enabled: true
+        PermissionsBukkit:
+            enabled: true
+        bPermissions:
+            enabled: true
+        GroupManager:
+            enabled: true
+        zPermissions:
+            enabled: true
+        Vault:
+            enabled: true
