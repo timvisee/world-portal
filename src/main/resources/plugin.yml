@@ -1,0 +1,14 @@
+name: WorldPortal
+description: 'Create portals using signs, pressureplates, buttons and more!'
+version: 0.2.8
+main: com.timvisee.worldportal.WorldPortal
+author: timvisee
+website: http://timvisee.com/
+softdepend: [PermissionsEx, bPermissions, GroupManager, zPermissions, Permissions, Vault] #hack to fix trove errors
+commands:
+  wp:
+    description: WorldPortal command
+    usage: /wp
+  worldportal:
+    description: WorldPortal command
+    usage: /worldportal
