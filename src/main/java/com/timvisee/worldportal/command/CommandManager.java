@@ -187,7 +187,7 @@ public class CommandManager {
                 "Save all portals",
                 "Save all " + WorldPortal.getPluginName() + " portals.",
                 worldPortalCommand);
-        saveCommand.setCommandPermissions("worldportal.command.reload", CommandPermissions.DefaultPermission.OP_ONLY);
+        saveCommand.setCommandPermissions("worldportal.command.save", CommandPermissions.DefaultPermission.OP_ONLY);
 
         // Register the reload command
         CommandDescription reloadCommand = new CommandDescription(
