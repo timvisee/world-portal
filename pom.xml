@@ -3,11 +3,11 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>me.timvisee</groupId>
+    <groupId>com.timvisee</groupId>
     <artifactId>WorldPortal</artifactId>
 
     <!-- Project Version -->
-    <version>0.2.8</version>
+    <version>0.2.9</version>
 
     <name>WorldPortal</name>
     <description>Create portals using signs, pressure plates, buttons and more!</description>
