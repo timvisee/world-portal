@@ -1,5 +1,7 @@
 package com.timvisee.worldportal;
 
+import com.timvisee.worldportal.command.CommandHandler;
+import com.timvisee.worldportal.world.WorldManager;
 import org.bukkit.*;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
@@ -22,6 +24,21 @@ import java.util.logging.Logger;
 
 public class WorldPortal extends JavaPlugin implements CommandExecutor {
 
+	/**
+	 * Defines the name of the plugin.
+	 */
+	private static final String PLUGIN_NAME = "World Portal";
+
+	/**
+	 * Defines the current Dungeon Maze version name.
+	 */
+	private static final String PLUGIN_VERSION_NAME = "0.2.9";
+
+	/**
+	 * Defines the current Dungeon Maze version code.
+	 */
+	private static final int PLUGIN_VERSION_CODE = 9;
+
 	public static Logger log = Logger.getLogger("Minecraft");
 	
 	private final BlockListener blockListener = new BlockListener(this);
@@ -35,12 +52,23 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 	
 	public final List<Player> wpRemoveUsers = new ArrayList<Player>();
 
+	private WorldManager worldManager;
+
+	private CommandHandler commandHandler;
+
 	private PermissionsManager permsMan;
 
 	List<String> worldPortals = new ArrayList<String>();
 	List<String> movedTooQuicklyIgnoreList = new ArrayList<String>();
 	
 	public final HashMap<String, Location> lastPlayerTeleportLocation = new HashMap<String, Location>();
+
+	public static WorldPortal instance;
+
+	/**
+	 * Defines the initialization time of the core.
+	 */
+	private Date initTime = new Date();
 
 	/**
 	 * List of possible block faces.
@@ -54,11 +82,17 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 			BlockFace.WEST,
 	};
 
+	public WorldPortal() {
+		WorldPortal.instance = this;
+	}
+
 	public void onEnable() {
 		// Setup costum files and folders
 		worldPortalsFile = new File(getDataFolder() + "/" + getConfig().getString("WorldPortalsListFile", "WorldPortals.list"));
 		worldPortalConfigFile = new File(getDataFolder() + "/" + "config.yml");
 		worldPortalLangFile = new File(getDataFolder() + "/" + "messages.yml");
+
+		initTime = new Date();
 		
 		// Check if all the config file exists
 		try {
@@ -71,6 +105,12 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 		pm.registerEvents(this.blockListener, this);
 		pm.registerEvents(this.entityListener, this);
 		pm.registerEvents(this.playerListener, this);
+
+		// Set up the world manager
+		setUpWorldManager();
+
+		// Setup the command handler
+        setUpCommandHandler();
 		
 		// Setup the permissions manager
 		setUpPermissionsManager();
@@ -89,8 +129,52 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 		PluginDescriptionFile pdfFile = getDescription();
 		log.info("[WorldPortal] WorldPortal v" + pdfFile.getVersion() + " Disabled");
 	}
-	
-    /**
+
+	public void setUpWorldManager() {
+		// Initialize the world manager
+		this.worldManager = new WorldManager(false);
+
+		// Initialize the world manager, return the result
+		this.worldManager.init();
+	}
+
+	public WorldManager getWorldManager() {
+		return this.worldManager;
+	}
+
+    public void setUpCommandHandler() {
+		// Initialize the command handler
+		this.commandHandler = new CommandHandler(false);
+
+		// Initialize the command handler, return the result
+		this.commandHandler.init();
+	}
+
+	public CommandHandler getCommandHandler() {
+		return commandHandler;
+	}
+
+	/**
+	 * Handle Bukkit commands.
+	 *
+	 * @param sender       The command sender (Bukkit).
+	 * @param cmd          The command (Bukkit).
+	 * @param commandLabel The command label (Bukkit).
+	 * @param args         The command arguments (Bukkit).
+	 *
+	 * @return True if the command was executed, false otherwise.
+	 */
+	@Override
+	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
+		// Make sure the command handler isn't null
+		if(commandHandler == null)
+			return false;
+
+		// Handle the command, return the result
+		return commandHandler.onCommand(sender, cmd, commandLabel, args);
+	}
+
+	/**
 	 * Setup the permissions manager
 	 */
 	public void setUpPermissionsManager() {
@@ -125,23 +209,6 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 	    return getPermissionsManager().hasPermission(player, "worldportal.use", true);
 	}
 
-	public boolean canUseWPCreate(Player player) {
-		return getPermissionsManager().hasPermission(player, "worldportal.create", player.isOp());
-	}
-
-	public boolean canUseWPRemove(Player player) {
-		return getPermissionsManager().hasPermission(player, "worldportal.remove", player.isOp());
-	}
-	public boolean canUseWPTeleport(Player player) {
-		return getPermissionsManager().hasPermission(player, "worldportal.teleport", player.isOp());
-	}
-	public boolean canUseWPSave(Player player) {
-		return getPermissionsManager().hasPermission(player, "worldportal.save", player.isOp());
-	}
-	public boolean canUseWPReload(Player player) {
-		return getPermissionsManager().hasPermission(player, "worldportal.reload", player.isOp());
-	}
-	
 	public void saveWorldPortals() {
 		// Save the Array(List) worldPortals in a String, line by line to a file
 		log.info("[WorldPortal] Saving World Portals...");
@@ -305,196 +372,19 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 	public List<String> getMessageList(String messageId, List<String> defaultMessages) {
 		List<String> messages = getConfigurationFromPath("messages.yml", true).getStringList(messageId);
 		List<String> messagesOutput = new ArrayList<String>();
-		
-		for(int i = 0; i < messages.size(); i++) {
-			messagesOutput.add(convertChatColors(messages.get(i).toString()));
-		}
-		
+
+		for (String message : messages)
+			messagesOutput.add(convertChatColors(message));
+
 		return messagesOutput;
 	}
 	
 	public void sendMessageList(Player player, String messageId, List<String> defaultMessages) {
 		List<String> messages = getMessageList(messageId, defaultMessages);
-		for(int i = 0; i < messages.size(); i++) {
-			player.sendMessage(convertChatColors(messages.get(i).toString()));
-		}
+		for(int i = 0; i < messages.size(); i++)
+			player.sendMessage(convertChatColors(messages.get(i)));
 	}
-	
-	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-		if (commandLabel.equalsIgnoreCase("worldportal") || commandLabel.equalsIgnoreCase("wp")) {
-			if(args.length >= 1) {
-				if(args[0].equalsIgnoreCase("reload")) {
-					if(sender instanceof Player) {
-						if(canUseWPReload((Player) sender) ) {
-							saveWorldPortals();
-							loadWorldPortals();
-							sender.sendMessage(getMessage("worldPortalListReloaded", "&e[WorldPortal] &aSuccesfully reloaded!"));
-							return true;
-						} else {
-							sender.sendMessage(getMessage("noReloadPermission", "&e[WorldPortal] &4You don''t have permisson"));
-							return true;
-						}
-					} else {
-						saveWorldPortals();
-						loadWorldPortals();
-						sender.sendMessage(ChatColor.YELLOW + "[WorldPortal] Succesfully reloaded!");
-						return true;
-					}
-					
-				} else if(args[0].equalsIgnoreCase("save")) {
-					if(sender instanceof Player) {
-						if(canUseWPSave((Player) sender) ) {
-							saveWorldPortals();
-							sender.sendMessage(getMessage("worldPortalListSaved", "&e[WorldPortal] &aSuccesfully saved!"));
-							return true;
-						} else {
-							sender.sendMessage(getMessage("noSavePermission", "&e[WorldPortal] &4You don''t have permisson"));
-							return true;
-						}
-					} else {
-						saveWorldPortals();
-						sender.sendMessage(ChatColor.YELLOW + "[WorldPortal] Succesfully saved!");
-						return true;
-					}
-					
-				} else if(args[0].equalsIgnoreCase("create")) {
-					if(sender instanceof Player) {
-						// Enable creation mode
-						if (canUseWPCreate((Player) sender)) {
-							createPortal.toggleWPUsers((Player) sender);
-						} else {
-							sender.sendMessage(getMessage("noCreatePermission", "&e[WorldPortal] &4You don''t have permisson"));
-						}
-					} else {
-						sender.sendMessage(ChatColor.YELLOW + "[WorldPortal] You can only make World Portals in-game");
-					}
-					return true;
-				} else if(args[0].equalsIgnoreCase("createstop")) {
-					// Disable the creation mode
-					if(createPortal.isPlayerInCreationMode((Player) sender)) {
-						createPortal.toggleWPUsers((Player) sender);
-					}
-					return true;
-				} else if(args[0].equalsIgnoreCase("remove")) {
-					if(sender instanceof Player) {
-						// Enable creation mode
-						if (canUseWPRemove((Player) sender)) {
-							toggleWPRemoveUsers((Player) sender);
-						} else {
-							sender.sendMessage(getMessage("noRemovePermission", "&e[WorldPortal] &4You don''t have permisson"));
-						}
-					} else {
-						sender.sendMessage(ChatColor.YELLOW + "[WorldPortal] You can only remove World Portals in-game");
-					}
-					return true;
-				} else if(args[0].equalsIgnoreCase("removestop")) {
-					// Disable the creation mode
-					if(WPRemoveUsersEnabled((Player) sender)) {
-						toggleWPRemoveUsers((Player) sender);
-					}
-					return true;
-				} else if(args[0].equalsIgnoreCase("tp") || args[0].equalsIgnoreCase("teleport")) {
-					
-					// Make sure the command has at least 2 or more arguments
-					if(args.length <= 1) {
-						sender.sendMessage(ChatColor.YELLOW + "[WorldPortal] Invalid command arguments!");
-						return true;
-					}
-					
-					if(sender instanceof Player) {
-						// Check if the player can use this command
-						if(canUseWPTeleport((Player) sender)) {
-							// Check if the world where the player want to teleport to exsists
-							if(worldExists(args[1].toString())) {
-								// Load the world if it isn't loaded
-								if(!isWorldLoaded(args[1].toString())) {
-									loadWorld(args[1].toString());
-								}
-								
-								if(args.length == 2) {
-									// Teleport to the other world
-									Location spawnLocation = getServer().getWorld(args[1].toString()).getSpawnLocation();
-									teleportPlayer((Player) sender, getFixedSpawnLocation(spawnLocation));
-								} else if(args.length == 3) {
-									if(args[2].equalsIgnoreCase("spawn")) {
-										Location spawnLocation = getServer().getWorld(args[1].toString()).getSpawnLocation();
-										teleportPlayer((Player) sender, getFixedSpawnLocation(spawnLocation));
-										
-									} else {
-										String[] defaultMessages = {"&e[WorldPortal] &4Unknown command values! &eUse:", "&e[WorldPortal]   &f/wp tp <world>",
-												"&e[WorldPortal]   &f/wp tp <world> <x> <z>", "&f/wp tp <world> <x> <y> <z>"};
-										sendMessageList((Player) sender, "unknownTeleportCommand", Arrays.asList(defaultMessages));
-									}
-								} else if(args.length == 4) {
-									Location location = getServer().getWorld(args[1].toString()).getSpawnLocation();
-									if(stringIsInt(args[2].toString()) || stringIsInt(args[3].toString())) {
-										location.setX(Integer.parseInt(args[2].toString()));
-										location.setY(0);
-										location.setZ(Integer.parseInt(args[3].toString()));
-										location.setY(getServer().getWorld(args[1].toString()).getHighestBlockYAt(location.getBlockX(), location.getBlockZ()));
-										teleportPlayer((Player) sender, getFixedSpawnLocation(location));
-										
-									} else {
-										String[] defaultMessages = {"&e[WorldPortal] &4Unknown command values! &eUse:", "&e[WorldPortal]   &f/wp tp <world>",
-												"&e[WorldPortal]   &f/wp tp <world> <x> <z>", "&f/wp tp <world> <x> <y> <z>"};
-										sendMessageList((Player) sender, "unknownTeleportCommand", Arrays.asList(defaultMessages));
-									}
-								} else if(args.length == 5) {
-									Location location = getServer().getWorld(args[1].toString()).getSpawnLocation();
-									if(stringIsInt(args[2].toString()) || stringIsInt(args[3].toString()) || stringIsInt(args[4].toString())) {
-										location.setX(Integer.parseInt(args[2].toString()));
-										location.setY(Integer.parseInt(args[3].toString()));
-										location.setZ(Integer.parseInt(args[4].toString()));
-										teleportPlayer((Player) sender, location);
-										
-									} else {
-										String[] defaultMessages = {"&e[WorldPortal] &4Unknown command values! &eUse:", "&e[WorldPortal]   &f/wp tp <world>",
-												"&e[WorldPortal]   &f/wp tp <world> <x> <z>", "&f/wp tp <world> <x> <y> <z>"};
-										sendMessageList((Player) sender, "unknownTeleportCommand", Arrays.asList(defaultMessages));
-									}
-								}
-							} else {
-								String message = getMessage("tpToWorldMessage", "&e[WorldPortal] &4The world ''&f%worldname&4'' doesn't exists!");
-								sender.sendMessage(message.replaceAll("%worldname%", args[1].toString()));
-								return true;
-							}
-						} else {
-							sender.sendMessage(getMessage("noTeleportCommandPermission", "&e[WorldPortal] &4You don''t have permisson"));
-						}						
-					} else {
-						sender.sendMessage(ChatColor.YELLOW + "[WorldPortal] You can only use this in-game");
-					}
-					return true;
-				} else if(args[0].equalsIgnoreCase("info")) {
-					if(sender instanceof Player) {
-						if(createPortal.isPlayerInCreationMode((Player) sender)) {
-							getMessage("infoCreationModeEnabled", "&e[WorldPortal] Creation-mode &aenabled");
-						} else {
-							getMessage("infoCreationModeDisabled", "&e[WorldPortal] Creation-mode &4disabled");
-						}
-						if(WPRemoveUsersEnabled((Player) sender)) {
-							getMessage("infoRemoveModeEnabled", "&e[WorldPortal] Remove-mode &aenabled");
-						} else {
-							sender.sendMessage(getMessage("infoRemoveModeDisabled", "&e[WorldPortal] Remove-mode &4disabled"));
-						}
-					} else {
-						sender.sendMessage(ChatColor.YELLOW + "[WorldPortal] You can only view your info in-game");
-					}
-					return true;
-				} else if(args[0].equalsIgnoreCase("version") || args[0].equalsIgnoreCase("ver")) {
-					PluginDescriptionFile pdfFile = getDescription();
-					sender.sendMessage(ChatColor.YELLOW + "This server is running WorldPortal v" + pdfFile.getVersion());
-					sender.sendMessage(ChatColor.YELLOW + "WorldPortal is made my Tim Visee - timvisee.com");
-					return true;
-				}
-			}
-			
-			sender.sendMessage(getMessage("unknownCommandMessage", "&e[WorldPortal] &4Unknown command! &eTry &f/wp create"));
-			return true;
-		}
-		return false;
-	}
-	
+
 	public void addMovedTooQuicklyIgnoreListPlayer(Player player) {
 		addMovedTooQuicklyIgnoreListPlayer(player.getName());
 	}
@@ -543,7 +433,7 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 			// Enable creation mode
 			wpRemoveUsers.add(player);
 			String[] defaultMessages = {"&e[WorldPortal] Remove-mode &aenabled", "&e[WorldPortal] Right-click on a WorldPortal to remove it",
-					"&e[WorldPortal] Remove a &fSign&e, &fLever&e, &fPressureplate&e or a &fbutton&e", "&e[WorldPortal] Use &f/wp removestop &eto disable the remove-mode"};
+					"&e[WorldPortal] Remove a &fSign&e, &fLever&e, &fPressureplate&e or a &fbutton&e", "&e[WorldPortal] Use &f/wp remove stop &eto disable the remove-mode"};
 			sendMessageList(player, "removeModeEnabled", Arrays.asList(defaultMessages));
 		}
 	}
@@ -869,21 +759,6 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 		player.setVelocity(new Vector(0, 0, 0));
 		player.teleport(location);
 
-		/*getServer().broadcastMessage("0:" + player.getLocation().toString());
-		Location l = new Location(location.getWorld(), player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ());
-		addMovedTooQuicklyIgnoreListPlayer(player);
-		player.teleport(l);
-		getServer().broadcastMessage("1:" + player.getLocation().toString());
-		addLastTeleportPlayerLocation(player, location);
-		addMovedTooQuicklyIgnoreListPlayer(player);
-		player.teleport(location);
-		getServer().broadcastMessage("2:" + player.getLocation().toString());
-		
-		getServer().broadcastMessage("TELEPORTHAT");
-		
-		player.teleport(location, TeleportCause.COMMAND);
-		getServer().broadcastMessage("3:" + player.getLocation().toString());*/
-		
 		if(showMessage) {
 			if(getConfig().getBoolean("showMessageOnTeleportation", true)) {
 				String message = getMessage("tpToWorldMessage", "&e[WorldPortal] Teleported to the world '&f%worldname%&e'");
@@ -893,18 +768,32 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 	}
 	
 	public Location getFixedSpawnLocation(Location spawnLocation) {
-		spawnLocation.setY(spawnLocation.getY() + 1);
-		
-		for(int y = spawnLocation.getBlockY(); y < 128; y++) {
-			if(spawnLocation.getBlock().getType() == Material.AIR) {
-				if(spawnLocation.getBlock().getType() == Material.AIR) {
-					return spawnLocation.getBlock().getLocation();
-				}
+		for(int y = spawnLocation.getBlockY(); y < 254; y++) {
+			// Get the block
+			Block current = spawnLocation.getWorld().getBlockAt(
+					(int) spawnLocation.getX(),
+					y,
+					(int) spawnLocation.getZ()
+			);
+
+			if(current.getType() == Material.AIR) {
+				// Get the blocks one and two above
+				Block one = current.getRelative(0, 1, 0);
+				Block two = current.getRelative(0, 2, 0);
+
+				// Continue if one isn't free
+				if(one == null || one.getType() != Material.AIR)
+					continue;
+
+				if(two == null || two.getType() != Material.AIR)
+                    spawnLocation.setY(y);
+				else
+					spawnLocation.setY(y + 1);
+
+				return spawnLocation;
 			}
-			
-			spawnLocation.setY(spawnLocation.getY() + 1);
-			spawnLocation.setY(spawnLocation.getY() + 1);
 		}
+
 		return spawnLocation;
 	}
 	
@@ -977,4 +866,52 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 
         return set;
     }
+
+	/**
+	 * Get the name of the plugin.
+	 *
+	 * @return Plugin name.
+	 */
+	public static String getPluginName() {
+		return PLUGIN_NAME;
+	}
+
+	/**
+	 * Get the current installed Dungeon Maze version name.
+	 *
+	 * @return The version name of the currently installed Dungeon Maze instance.
+	 */
+	public static String getVersionName() {
+		return PLUGIN_VERSION_NAME;
+	}
+
+	/**
+	 * Get the current installed Dungeon Maze version code.
+	 *
+	 * @return The version code of the currently installed Dungeon Maze instance.
+	 */
+	public static int getVersionCode() {
+		return PLUGIN_VERSION_CODE;
+	}
+
+	/**
+	 * Get the complete version identifier.
+	 * The includes a prefixed 'v' sign, the version name and the version code between brackets.
+	 *
+	 * @param name True to include the plugin name in front.
+	 *
+	 * @return The complete version string.
+	 */
+	public static String getVersionComplete(boolean name) {
+		return (name ? WorldPortal.PLUGIN_NAME : "") + " v" + getVersionName() + " (" + getVersionCode() + ")";
+	}
+
+	/**
+	 * Get the plugin initialization time.
+	 *
+	 * @return Plugin initialization time.
+	 */
+	public Date getInitializationTime() {
+		return this.initTime;
+	}
 }

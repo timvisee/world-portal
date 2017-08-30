@@ -46,7 +46,7 @@ public class CreatePortal {
 			}
 			wpCreateUsers.put(player, 0);
 			String[] defaultMessages = {"&e[WorldPortal] Creation-mode &aenabled", "&e[WorldPortal] Right-click on a object to create a WorldPortal",
-					"&e[WorldPortal] Select a &fSign&e, &fLever&e, &fPressureplate&e or a &fbutton", "&e[WorldPortal] Use &f/wp createstop&e to disable the creationmode"};
+					"&e[WorldPortal] Select a &fSign&e, &fLever&e, &fPressureplate&e or a &fbutton", "&e[WorldPortal] Use &f/wp create stop&e to disable the creationmode"};
 			plugin.sendMessageList(player, "createModeEnabled", Arrays.asList(defaultMessages));
 		}
 	}
@@ -209,8 +209,6 @@ public class CreatePortal {
 			if(block.getType() == Material.PORTAL || block.getType() == Material.END_GATEWAY) {
 				// Find connected portal blocks, and add them all
 				final Set<Block> portalBlocks = WorldPortal.getConnectedBlocks(block);
-				for (Block portalBlock : portalBlocks)
-					System.out.println("FOUND BLOCK: " + portalBlock.getLocation() + ", TOT: " + portalBlocks.size());
 				for (Block portalBlock : portalBlocks)
 					addCreatedWorldPortal(world, portalBlock.getLocation(), linkedWorld, linkedWorldSpawnLocation, worldPortalLookingDirection, false, false);
 
