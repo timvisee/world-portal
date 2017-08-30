@@ -2,6 +2,7 @@ package com.timvisee.worldportal;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
@@ -9,6 +10,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.logging.Logger;
 
 public class CreatePortal {
@@ -69,7 +71,7 @@ public class CreatePortal {
 		return 0;
 	}
 	
-	public void CreatePortalSelectNewPortal(Player player, Block newPortalBlock) {
+	public void createPortalSelectNewPortal(Player player, Block newPortalBlock) {
 		if(!plugin.isWorldPortal(newPortalBlock.getWorld(), newPortalBlock)) {
 			// Create a new world portal
 			if(wpCreatingWorldPortalWorld.containsKey(player)) {
@@ -92,10 +94,10 @@ public class CreatePortal {
 		}
 	}
 	
-	public void CreatePortalLinkWorld(Player player, String worldName) {
-		if(wpCreatingWorldPortalLinkedWorld.containsKey(player)) {
+	public void createPortalLinkWorld(Player player, String worldName) {
+		if(wpCreatingWorldPortalLinkedWorld.containsKey(player))
 			wpCreatingWorldPortalLinkedWorld.remove(player);
-		}
+
 		wpCreatingWorldPortalLinkedWorld.put(player, worldName);
 		
 		// Send the player a succesfully linked message
@@ -121,11 +123,11 @@ public class CreatePortal {
 		}
 	}
 	
-	public void CreatePortalSelectEnvironment(Player player, String environment) {
+	public void createPortalSelectEnvironment(Player player, String environment) {
 		if(environment.equalsIgnoreCase("normal") || environment.equalsIgnoreCase("nether") || environment.equalsIgnoreCase("end")) {
-			if(wpCreatingWorldPortalWorldEnvironment.containsKey(player)) {
+			if(wpCreatingWorldPortalWorldEnvironment.containsKey(player))
 				wpCreatingWorldPortalWorldEnvironment.remove(player);
-			}
+
 			if(environment.equalsIgnoreCase("normal")) { wpCreatingWorldPortalWorldEnvironment.put(player, Environment.NORMAL); }
 			if(environment.equalsIgnoreCase("nether")) { wpCreatingWorldPortalWorldEnvironment.put(player, Environment.NETHER); }
 			if(environment.equalsIgnoreCase("end")) { wpCreatingWorldPortalWorldEnvironment.put(player, Environment.THE_END); }
@@ -135,7 +137,7 @@ public class CreatePortal {
 			player.sendMessage(plugin.getMessage("worldPortalCreateGenerateWorld", "&e[WorldPortal] Generating world, this may take some time. Please wait for a completion message."));
 			String newWorldName = wpCreatingWorldPortalLinkedWorld.get(player);
 			Environment newWorldEnvironment = wpCreatingWorldPortalWorldEnvironment.get(player);
-			if(plugin.worldExists(newWorldName) == false) {
+			if(!plugin.worldExists(newWorldName)) {
 				// No world with this name, create one
 				plugin.createWorld(newWorldName, newWorldEnvironment, true);
 			}
@@ -151,12 +153,11 @@ public class CreatePortal {
 		}
 	}
 	
-	public void CreatePortalSelectSpawnPoint(Player player, String spawnValues) {
+	public void createPortalSelectSpawnPoint(Player player, String spawnValues) {
 		// Spawn set to linked world spawn
-		if(wpCreatingWorldPortalWorldSpawnLocation.containsKey(player)) {
+		if(wpCreatingWorldPortalWorldSpawnLocation.containsKey(player))
 			wpCreatingWorldPortalWorldSpawnLocation.remove(player);
-		}
-		
+
 		wpCreatingWorldPortalWorldSpawnLocation.put(player, spawnValues);
 		
 		setWPUsersValue(player, 4);
@@ -168,47 +169,70 @@ public class CreatePortal {
 		player.sendMessage(plugin.getMessage("####################", "&e[WorldPortal] &eEnter the degrees into the chat"));
 	}
 	
-	public void CreatePortalSelectLookingDirection(Player player, int lookingDirection) {
-		if(lookingDirection < 0) {
-			// Wrong looking direction, show message
-			player.sendMessage(ChatColor.DARK_RED + String.valueOf(lookingDirection));
-			String[] defaultMessages = {"&e[WorldPortal] &4Invalid looking direction!", "&e[WorldPortal] Choose from &f0&e to &f360"};
-			plugin.sendMessageList(player, "####################", Arrays.asList(defaultMessages));
-		} else if(lookingDirection > 360) {
-			// Wrong looking direction, show message
-			player.sendMessage(ChatColor.DARK_RED + String.valueOf(lookingDirection));
-			String[] defaultMessages = {"&e[WorldPortal] &4Invalid looking direction!", "&e[WorldPortal] Choose from &f0&e to &f360"};
-			plugin.sendMessageList(player, "####################", Arrays.asList(defaultMessages));
-		} else {
-			@SuppressWarnings("unused")
-			World linkedWorld = plugin.getServer().getWorld(wpCreatingWorldPortalLinkedWorld.get(player));
-			
-			// Spawn set to linked world spawn
-			if(wpCreatingWorldPortalLookingDirection.containsKey(player)) {
-				wpCreatingWorldPortalLookingDirection.remove(player);
-			}
-			
-			wpCreatingWorldPortalLookingDirection.put(player, lookingDirection);
-			
-			AddCreatedWorldPortal(wpCreatingWorldPortalWorld.get(player),wpCreatingWorldPortalLocation.get(player),wpCreatingWorldPortalLinkedWorld.get(player),wpCreatingWorldPortalWorldSpawnLocation.get(player), lookingDirection);
-			
-			player.sendMessage(plugin.getMessage("####################", "&e[WorldPortal] &aThe looking-direction has been set"));
-			player.sendMessage(plugin.getMessage("####################", "&e[WorldPortal] &aWorld portal succesfully created!"));
-			// Disable creation mode
-			toggleWPUsers(player);
-		}
+	public void createPortalSelectLookingDirection(Player player, int lookDirection) {
+	    // Normalize the looking direction
+		lookDirection = lookDirection % 360;
+
+        // Spawn set to linked world spawn
+        if(wpCreatingWorldPortalLookingDirection.containsKey(player))
+            wpCreatingWorldPortalLookingDirection.remove(player);
+
+        wpCreatingWorldPortalLookingDirection.put(player, lookDirection);
+
+        addCreatedWorldPortal(wpCreatingWorldPortalWorld.get(player),wpCreatingWorldPortalLocation.get(player),wpCreatingWorldPortalLinkedWorld.get(player),wpCreatingWorldPortalWorldSpawnLocation.get(player), lookDirection);
+
+        player.sendMessage(plugin.getMessage("####################", "&e[WorldPortal] &aThe looking-direction has been set"));
+        player.sendMessage(plugin.getMessage("####################", "&e[WorldPortal] &aWorld portal succesfully created!"));
+
+        // Disable creation mode
+        toggleWPUsers(player);
 	}
-	
-	public void AddCreatedWorldPortal(World world, Location worldPortalLocation, String linkedWorld, String linkedWorldSpawnLocation, int worldPortalLookingDirection) {
-		String worldString = world.getName();
-		String worldPortalLocationString = Integer.toString(worldPortalLocation.getBlockX())+" "+Integer.toString(worldPortalLocation.getBlockY())+" "+Integer.toString(worldPortalLocation.getBlockZ());
-		String linkedWorldString = linkedWorld;
-		String linkedWorldSpawnLocationString = linkedWorldSpawnLocation;
-		String linkedWorldLookingDirection = String.valueOf(worldPortalLookingDirection);
+
+	public void addCreatedWorldPortal(World world, Location worldPortalLocation, String linkedWorld, String linkedWorldSpawnLocation, int worldPortalLookingDirection) {
+		addCreatedWorldPortal(world, worldPortalLocation, linkedWorld, linkedWorldSpawnLocation, worldPortalLookingDirection, true, true);
+	}
+
+	public void addCreatedWorldPortal(World world, Location worldPortalLocation, String linkedWorld, String linkedWorldSpawnLocation, int worldPortalLookingDirection, boolean escalate, boolean save) {
+		// Escalate to find connected blocks
+		if(escalate) {
+			// Get the portal block
+			final Block block = worldPortalLocation.getBlock();
+
+			// Find other bed parts, and add it
+			if(block.getType() == Material.BED) {
+				final Block other = WorldPortal.findOtherBedBlock(block);
+				if(other != null)
+					addCreatedWorldPortal(world, other.getLocation(), linkedWorld, linkedWorldSpawnLocation, worldPortalLookingDirection, false, false);
+			}
+
+			// Find adjacent portal blocks
+			if(block.getType() == Material.PORTAL || block.getType() == Material.END_GATEWAY) {
+				// Find connected portal blocks, and add them all
+				final Set<Block> portalBlocks = WorldPortal.getConnectedBlocks(block);
+				for (Block portalBlock : portalBlocks)
+					System.out.println("FOUND BLOCK: " + portalBlock.getLocation() + ", TOT: " + portalBlocks.size());
+				for (Block portalBlock : portalBlocks)
+					addCreatedWorldPortal(world, portalBlock.getLocation(), linkedWorld, linkedWorldSpawnLocation, worldPortalLookingDirection, false, false);
+
+				// Save and return
+                if(save)
+                    plugin.saveWorldPortals();
+				return;
+			}
+		}
+
+		// Don't add if this already is a world portal
+		if(plugin.isWorldPortal(worldPortalLocation.getBlock()))
+			return;
+
+		final String worldString = world.getName();
+		final String worldPortalLocationString = Integer.toString(worldPortalLocation.getBlockX())+" "+Integer.toString(worldPortalLocation.getBlockY())+" "+Integer.toString(worldPortalLocation.getBlockZ());
+		final String linkedWorldLookingDirection = String.valueOf(worldPortalLookingDirection);
 		
-		String newWorldPortalString = worldString + "|" + worldPortalLocationString + "|" + linkedWorldString + "|" + linkedWorldSpawnLocationString + "|" + linkedWorldLookingDirection;
+		final String newWorldPortalString = worldString + "|" + worldPortalLocationString + "|" + linkedWorld + "|" + linkedWorldSpawnLocation + "|" + linkedWorldLookingDirection;
 		plugin.worldPortals.add(newWorldPortalString);
-		
-		plugin.saveWorldPortals();
+
+		if(save)
+            plugin.saveWorldPortals();
 	}
 }

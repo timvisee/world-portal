@@ -3,22 +3,21 @@ package com.timvisee.worldportal;
 import org.bukkit.*;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.material.Bed;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class WorldPortal extends JavaPlugin implements CommandExecutor {
@@ -42,6 +41,18 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 	List<String> movedTooQuicklyIgnoreList = new ArrayList<String>();
 	
 	public final HashMap<String, Location> lastPlayerTeleportLocation = new HashMap<String, Location>();
+
+	/**
+	 * List of possible block faces.
+	 */
+	public static final BlockFace BLOCK_FACES[] = {
+			BlockFace.UP,
+			BlockFace.DOWN,
+			BlockFace.NORTH,
+			BlockFace.EAST,
+			BlockFace.SOUTH,
+			BlockFace.WEST,
+	};
 
 	public void onEnable() {
 		// Setup costum files and folders
@@ -639,35 +650,61 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
     }
 	
 	public void removeWorldPortal(Block block, boolean removeBlock) {
-		removeWorldPortal(block.getWorld(), block, removeBlock);
+		removeWorldPortal(block.getWorld(), block, removeBlock, true, true);
 	}
-	public void removeWorldPortal(World world, Block block, boolean removeBlock) {
-		for(int i = 0; i < worldPortals.size(); i++) {
-			String[] worldPortalValues = worldPortals.get(i).split("\\|");
-			if(worldPortalValues[0].equals(world.getName())) {
-				String worldPortalLocationString = Integer.toString(block.getX())+" "+Integer.toString(block.getY())+" "+Integer.toString(block.getZ());
-				if(worldPortalValues[1].equals(worldPortalLocationString)) {
-					worldPortals.remove(i);
-				}
+
+	public void removeWorldPortal(World world, Block block, boolean removeBlock, boolean escalate, boolean save) {
+		// Escalate to find connected blocks
+		if(escalate) {
+			// Find other bed parts, and add it
+			if(block.getType() == Material.BED) {
+				final Block other = WorldPortal.findOtherBedBlock(block);
+				if(other != null)
+					removeWorldPortal(world, other, removeBlock, false, false);
+			}
+
+			// Find adjacent portal blocks
+			if(block.getType() == Material.PORTAL || block.getType() == Material.END_GATEWAY) {
+				// Find connected portal blocks, and add them all
+				final Set<Block> portalBlocks = WorldPortal.getConnectedBlocks(block);
+				for (Block portalBlock : portalBlocks)
+					removeWorldPortal(world, portalBlock, removeBlock, false, false);
+
+				// Save and return
+                if(save)
+                    saveWorldPortals();
+				return;
 			}
 		}
-		if(removeBlock) {
-			block.setTypeId(0);
+
+		// Remove the block
+		for(int i = 0; i < worldPortals.size(); i++) {
+			final String[] worldPortalValues = worldPortals.get(i).split("\\|");
+			if(worldPortalValues[0].equals(world.getName())) {
+				final String worldPortalLocationString = Integer.toString(block.getX())+" "+Integer.toString(block.getY())+" "+Integer.toString(block.getZ());
+				if(worldPortalValues[1].equals(worldPortalLocationString))
+					worldPortals.remove(i);
+			}
 		}
-		
+
+		// Remove the block
+		if(removeBlock)
+			block.setType(Material.AIR);
+
 		// Save the portals because one was removed
-		saveWorldPortals();
+		if(save)
+            saveWorldPortals();
 	}
 	
 	public boolean isWorldPortal(Block block) {
 		return isWorldPortal(block.getWorld(), block);
 	}
 	public boolean isWorldPortal(World world, Block block) {
-		for(int i = 0; i < worldPortals.size(); i++) {
-			String[] worldPortalValues = worldPortals.get(i).split("\\|");
-			if(worldPortalValues[0].equals(world.getName())) {
-				String worldPortalLocationString = Integer.toString(block.getX())+" "+Integer.toString(block.getY())+" "+Integer.toString(block.getZ());
-				if(worldPortalValues[1].equals(worldPortalLocationString)) {
+		for (String worldPortal : worldPortals) {
+			String[] worldPortalValues = worldPortal.split("\\|");
+			if (worldPortalValues[0].equals(world.getName())) {
+				String worldPortalLocationString = Integer.toString(block.getX()) + " " + Integer.toString(block.getY()) + " " + Integer.toString(block.getZ());
+				if (worldPortalValues[1].equals(worldPortalLocationString)) {
 					return true;
 				}
 			}
@@ -679,24 +716,24 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 		return getWorldPortalLinkedWorld(block.getWorld(), block);
 	}
 	public World getWorldPortalLinkedWorld(World world, Block block) {
-		for(int i = 0; i < worldPortals.size(); i++) {  
-			String[] worldPortalValues = worldPortals.get(i).split("\\|");
-			if(worldPortalValues[0].equals(world.getName())) {
-				String worldPortalLocationString = Integer.toString(block.getX())+" "+Integer.toString(block.getY())+" "+Integer.toString(block.getZ());
-				if(worldPortalValues[1].equals(worldPortalLocationString)) {
-					return getServer().getWorld(worldPortalValues[2].toString());
+		for (String worldPortal : worldPortals) {
+			String[] worldPortalValues = worldPortal.split("\\|");
+			if (worldPortalValues[0].equals(world.getName())) {
+				String worldPortalLocationString = Integer.toString(block.getX()) + " " + Integer.toString(block.getY()) + " " + Integer.toString(block.getZ());
+				if (worldPortalValues[1].equals(worldPortalLocationString)) {
+					return getServer().getWorld(worldPortalValues[2]);
 				}
 			}
 		}
 		return world;
 	}
 	public String getWorldPortalLinkedWorldName(String world, Block block) {
-		for(int i = 0; i < worldPortals.size(); i++) {  
-			String[] worldPortalValues = worldPortals.get(i).split("\\|");
-			if(worldPortalValues[0].equals(world)) {
-				String worldPortalLocationString = Integer.toString(block.getX())+" "+Integer.toString(block.getY())+" "+Integer.toString(block.getZ());
-				if(worldPortalValues[1].equals(worldPortalLocationString)) {
-					return worldPortalValues[2].toString();
+		for (String worldPortal : worldPortals) {
+			String[] worldPortalValues = worldPortal.split("\\|");
+			if (worldPortalValues[0].equals(world)) {
+				String worldPortalLocationString = Integer.toString(block.getX()) + " " + Integer.toString(block.getY()) + " " + Integer.toString(block.getZ());
+				if (worldPortalValues[1].equals(worldPortalLocationString)) {
+					return worldPortalValues[2];
 				}
 			}
 		}
@@ -704,33 +741,33 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 	}
 	
 	public Location getWorldPortalLinkedWorldSpawnLocation(World world, Block block) {
-		for(int i = 0; i < worldPortals.size(); i++) {  
-			String[] worldPortalValues = worldPortals.get(i).split("\\|");
-			if(worldPortalValues[0].equals(world.getName())) {
-				String worldPortalLocationString = Integer.toString(block.getX())+" "+Integer.toString(block.getY())+" "+Integer.toString(block.getZ());
-				if(worldPortalValues[1].equals(worldPortalLocationString)) {
-					
-					if(worldPortalValues[3].equalsIgnoreCase("spawn")) {
+		for (String worldPortal : worldPortals) {
+			String[] worldPortalValues = worldPortal.split("\\|");
+			if (worldPortalValues[0].equals(world.getName())) {
+				String worldPortalLocationString = Integer.toString(block.getX()) + " " + Integer.toString(block.getY()) + " " + Integer.toString(block.getZ());
+				if (worldPortalValues[1].equals(worldPortalLocationString)) {
+
+					if (worldPortalValues[3].equalsIgnoreCase("spawn")) {
 						return getFixedSpawnLocation(getWorldPortalLinkedWorld(world, block).getSpawnLocation());
-						
-					} else if(worldPortalValues[3].split(" ").length == 2){
+
+					} else if (worldPortalValues[3].split(" ").length == 2) {
 						String[] splittedLocation = worldPortalValues[3].split(" ");
-						Location linkedWorldSpawnLocation = block.getLocation();;
-						linkedWorldSpawnLocation.setX(Integer.parseInt(splittedLocation[0].toString()));
+						Location linkedWorldSpawnLocation = block.getLocation();
+						linkedWorldSpawnLocation.setX(Integer.parseInt(splittedLocation[0]));
 						linkedWorldSpawnLocation.setY(0);
-						linkedWorldSpawnLocation.setZ(Integer.parseInt(splittedLocation[1].toString()));
+						linkedWorldSpawnLocation.setZ(Integer.parseInt(splittedLocation[1]));
 						linkedWorldSpawnLocation.setY(getWorldPortalLinkedWorld(world, block).getHighestBlockYAt(linkedWorldSpawnLocation.getBlockX(), linkedWorldSpawnLocation.getBlockZ()));
 						return linkedWorldSpawnLocation;
-						
+
 					} else {
 						String[] splittedLocation = worldPortalValues[3].split(" ");
-						Location linkedWorldSpawnLocation = block.getLocation();;
-						linkedWorldSpawnLocation.setX(Integer.parseInt(splittedLocation[0].toString()));
-						linkedWorldSpawnLocation.setY(Integer.parseInt(splittedLocation[1].toString()));
-						linkedWorldSpawnLocation.setZ(Integer.parseInt(splittedLocation[2].toString()));
+						Location linkedWorldSpawnLocation = block.getLocation();
+						linkedWorldSpawnLocation.setX(Integer.parseInt(splittedLocation[0]));
+						linkedWorldSpawnLocation.setY(Integer.parseInt(splittedLocation[1]));
+						linkedWorldSpawnLocation.setZ(Integer.parseInt(splittedLocation[2]));
 						return linkedWorldSpawnLocation;
 					}
-						
+
 				}
 			}
 		}
@@ -738,16 +775,16 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 	}
 	
 	public float getWorldPortalLinkedWorldLookingDirection(World world, Block block) {
-		for(int i = 0; i < worldPortals.size(); i++) {  
-			String[] worldPortalValues = worldPortals.get(i).split("\\|");
-			if(worldPortalValues[0].equals(world.getName())) {
-				String worldPortalLocationString = Integer.toString(block.getX())+" "+Integer.toString(block.getY())+" "+Integer.toString(block.getZ());
-				if(worldPortalValues[1].equals(worldPortalLocationString)) {
-					
-					if(worldPortalValues.length >= 5) {
+		for (String worldPortal : worldPortals) {
+			String[] worldPortalValues = worldPortal.split("\\|");
+			if (worldPortalValues[0].equals(world.getName())) {
+				String worldPortalLocationString = Integer.toString(block.getX()) + " " + Integer.toString(block.getY()) + " " + Integer.toString(block.getZ());
+				if (worldPortalValues[1].equals(worldPortalLocationString)) {
+
+					if (worldPortalValues.length >= 5) {
 						return Float.parseFloat(worldPortalValues[4].toString());
 					}
-						
+
 				}
 			}
 		}
@@ -850,24 +887,23 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 		if(showMessage) {
 			if(getConfig().getBoolean("showMessageOnTeleportation", true)) {
 				String message = getMessage("tpToWorldMessage", "&e[WorldPortal] Teleported to the world '&f%worldname%&e'");
-				player.sendMessage(message.replace("%worldname%", location.getWorld().getName().toString()));
+				player.sendMessage(message.replace("%worldname%", location.getWorld().getName()));
 			}
 		}
 	}
 	
 	public Location getFixedSpawnLocation(Location spawnLocation) {
-		Location currentLocation = spawnLocation;
-		Location aboveCurrentLocation = currentLocation; aboveCurrentLocation.setY(aboveCurrentLocation.getY() + 1);
+		spawnLocation.setY(spawnLocation.getY() + 1);
 		
-		for(int y = currentLocation.getBlockY(); y < 128; y++) {
-			if(currentLocation.getBlock().getTypeId() == 0) {
-				if(aboveCurrentLocation.getBlock().getTypeId() == 0) {
-					return currentLocation.getBlock().getLocation();
+		for(int y = spawnLocation.getBlockY(); y < 128; y++) {
+			if(spawnLocation.getBlock().getType() == Material.AIR) {
+				if(spawnLocation.getBlock().getType() == Material.AIR) {
+					return spawnLocation.getBlock().getLocation();
 				}
 			}
 			
-			currentLocation.setY(currentLocation.getY() + 1);
-			aboveCurrentLocation.setY(currentLocation.getY() + 1);
+			spawnLocation.setY(spawnLocation.getY() + 1);
+			spawnLocation.setY(spawnLocation.getY() + 1);
 		}
 		return spawnLocation;
 	}
@@ -882,4 +918,63 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 		location.getChunk().load();
 		return b;
 	}
+
+	/**
+	 * Find the other block that is part of the given bed.
+	 *
+	 * @param block The block of the bed.
+	 *
+	 * @return Other bed block, or null if not available.
+	 */
+	public static Block findOtherBedBlock(Block block) {
+		// Make sure the block is a bed
+		if(block.getType() != Material.BED)
+			return null;
+
+		try {
+			// Get the bed block material
+			final Bed bed = (Bed) block.getState().getData();
+
+			// Get the other block
+			final Block other = block.getRelative(bed.getFacing().getOppositeFace());
+			if(other.getType() != Material.BED)
+				return null;
+
+			// Make sure the other part is the real other part
+			final Bed otherBed = (Bed) other.getState().getData();
+			return bed.isHeadOfBed() != otherBed.isHeadOfBed() ? other : null;
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	private static void getConnectedBlocks(Block block, Set<Block> results, List<Block> todo) {
+		//Loop through all block faces (All 6 sides around the block)
+		for(BlockFace face : BLOCK_FACES) {
+			Block b = block.getRelative(face);
+			//Check if they're both of the same type
+			if(b.getType() == block.getType()) {
+				//Add the block if it wasn't added already
+				if(results.add(b))
+					//Add this block to the list of blocks that are yet to be done.
+					todo.add(b);
+			}
+		}
+	}
+
+    public static Set<Block> getConnectedBlocks(Block block) {
+        Set<Block> set = new HashSet<>();
+        LinkedList<Block> list = new LinkedList<>();
+
+        //Add the current block to the list of blocks that are yet to be done
+        list.add(block);
+
+        //Execute this method for each block in the 'todo' list
+        while((block = list.poll()) != null)
+            getConnectedBlocks(block, set, list);
+
+        return set;
+    }
 }
