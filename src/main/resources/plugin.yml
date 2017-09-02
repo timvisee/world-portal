@@ -1,6 +1,6 @@
 name: WorldPortal
 description: 'Create portals using signs, pressureplates, buttons and more!'
-version: 0.2.8
+version: 0.2.9.1
 main: com.timvisee.worldportal.WorldPortal
 author: timvisee
 website: http://timvisee.com/

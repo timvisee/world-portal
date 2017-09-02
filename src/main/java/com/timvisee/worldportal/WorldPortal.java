@@ -32,12 +32,12 @@ public class WorldPortal extends JavaPlugin implements CommandExecutor {
 	/**
 	 * Defines the current Dungeon Maze version name.
 	 */
-	private static final String PLUGIN_VERSION_NAME = "0.2.9";
+	private static final String PLUGIN_VERSION_NAME = "0.2.9.1";
 
 	/**
 	 * Defines the current Dungeon Maze version code.
 	 */
-	private static final int PLUGIN_VERSION_CODE = 9;
+	private static final int PLUGIN_VERSION_CODE = 10;
 
 	public static Logger log = Logger.getLogger("Minecraft");
 	

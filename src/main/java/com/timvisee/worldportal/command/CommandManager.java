@@ -122,6 +122,7 @@ public class CommandManager {
                 new ArrayList<String>() {{
                     add("teleport");
                     add("tp");
+                    add("t");
                     add("warp");
                     add("goto");
                     add("move");
